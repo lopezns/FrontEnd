@@ -1,0 +1,17 @@
+/* Footer.css */
+.footer {
+    padding: 30px;
+    text-align: center;
+    background-color: #004080; /* Cambia este color si lo deseas */
+    color: white;
+    margin-top: auto; /* Asegura que el footer se mantenga al fondo */
+}
+
+.footer .logoU {
+    width: 200px; /* Ajusta el tamaño del logo según sea necesario */
+    margin-bottom: 10px;
+}
+
+.footer .group-info {
+    margin-top: 10px;
+}

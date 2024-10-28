@@ -1,0 +1,74 @@
+.auth-container {
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-form {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+    max-width: 500px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+    .auth-form h2 {
+        font-size: 2em;
+        margin-bottom: 20px;
+    }
+
+    .auth-form input,
+    .auth-form select,
+    .auth-form button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .auth-form button {
+        background-color: #003366;
+        color: white;
+        border: 3px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .auth-form button:hover {
+            background-color: #00509E;
+        }
+
+.auth-image {
+    flex: 1;
+    background-size: cover;
+    background-position: center;
+}
+
+.register-link {
+    color: #003366;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.error-message {
+    color: red;
+    margin-bottom: 10px;
+}
+
+/* Estilos para la imagen de fondo */
+.background-image {
+    width: 100%; /* Ajusta al ancho del contenedor */
+    height: auto; /* Mantiene la proporción */
+    position: absolute; /* Permite que la imagen esté detrás del formulario */
+    top: 0; /* Alinea al top del contenedor */
+    left: 0; /* Alinea al lado izquierdo del contenedor */
+    z-index: -1; /* Envía la imagen detrás del formulario */
+}
+
+/* Resto del CSS permanece igual */
+

@@ -1,0 +1,291 @@
+/* Estilos generales */
+:root {
+    --background-color-light: #f0f0f0;
+    --background-color-dark: #333;
+    --text-color-light: #000;
+    --text-color-dark: #fff;
+    --button-color: #007bff; /* Azul para los botones */
+    --button-hover-color: #0056b3;
+}
+
+/* Modo claro y oscuro */
+.light-mode {
+    --background-color: var(--background-color-light);
+    --text-color: var(--text-color-light);
+}
+
+.dark-mode {
+    --background-color: var(--background-color-dark);
+    --text-color: var(--text-color-dark);
+}
+
+.admin-home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    text-align: center;
+    padding: 20px;
+    overflow-y: auto; /* Permitir scroll en toda la página */
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logoP {
+    width: 100px;
+    margin-bottom: 10px;
+}
+
+.header h1 {
+    margin: 10px 0;
+}
+
+.header-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.header-buttons button {
+    background-color: var(--button-color);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.header-buttons button:hover {
+    background-color: var(--button-hover-color);
+}
+
+/* Contenedor principal con scroll */
+.main-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+    max-height: calc(100vh - 40px); /* Ajuste para asegurar que el contenido no exceda la pantalla */
+    overflow-y: auto; /* Scroll en la sección principal */
+}
+
+/* Botones de las tablas */
+.table-buttons-left {
+    flex: 1;
+    max-width: 250px; /* Puedes ajustar este valor según tus necesidades */
+    background-color: #f4f4f4; /* Color de fondo */
+    padding: 10px;
+    overflow-y: auto; /* Agrega scroll si hay muchos botones */
+    max-height: 100%; /* Asegura que ocupe el alto completo del contenedor */
+}
+
+.table-buttons-left button {
+    background-color: var(--button-color);
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.table-buttons-left button:hover {
+    background-color: var(--button-hover-color);
+}
+
+/* Contenedor de detalles de la tabla */
+.table-details-right {
+    flex: 3;
+    overflow-y: auto; /* Scroll vertical para los detalles de las tablas */
+    padding: 10px;
+    background-color: #fff;
+    max-height: 100%; /* Asegura que ocupe el alto completo del contenedor */
+}
+
+.table-details-right h2 {
+    margin-bottom: 20px;
+}
+
+/* Contenedor de la tabla */
+.styled-table-container {
+    max-height: 60vh; /* Limitar la altura de la tabla para que tenga scroll */
+    overflow-y: auto; /* Habilitar el scroll en la tabla */
+}
+
+/* Estilos para las tablas */
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 18px;
+    min-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+    background-color: var(--button-color);
+    color: white;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #dddddd;
+}
+
+.styled-table tbody tr {
+    background-color: #f3f3f3;
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f9f9f9;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid var(--button-color);
+}
+
+.styled-table tbody tr:hover {
+    background-color: #eaeaea;
+}
+
+.table-details-right button {
+    background-color: var(--button-color);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.table-details-right button:hover {
+    background-color: var(--button-hover-color);
+}
+
+/* Scroll para la tabla */
+.styled-table-container {
+    max-height: 60vh; /* Limitar la altura de la tabla para que tenga scroll */
+    overflow-y: auto; /* Habilitar el scroll en la tabla */
+}
+
+.spacing {
+    margin: 200px 0; /* Ajusta el margen según tus necesidades */
+}
+
+
+/* Centrar los botones en la columna de acciones */
+.styled-table tbody tr td:last-child {
+    display: flex; /* Utiliza flexbox para centrar los elementos */
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+}
+
+/* Estilo de los botones */
+.styled-table tbody tr td button {
+    background-color: var(--button-color);
+    color: white;
+    padding: 5px 10px; /* Espaciado alrededor del texto */
+    border: none;
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 0 5px; /* Espacio entre los botones */
+}
+
+.styled-table tbody tr td button:hover {
+    background-color: var(--button-hover-color); /* Cambio de color al pasar el mouse */
+}
+/* Estilo para el fondo del modal */
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro translúcido */
+    z-index: 1000;
+}
+
+/* Estilo para el contenido del modal */
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    max-width: 90%;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Botón para cerrar el modal */
+/* Ajustes para el botón de cierre */
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+   
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Estilo del botón de Crear, Editar y Eliminar */
+button {
+    margin: 5px;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.5s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo del botón de Confirmar y Cancelar */
+button.confirm {
+    background-color: #28a745;
+}
+
+button.cancel {
+    background-color: #dc3545;
+}

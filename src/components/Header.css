@@ -1,0 +1,64 @@
+/*
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #29c841;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+}
+*/
+button {
+    margin-left: 10px;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: white;
+    color: #007bff;
+}
+
+    button:hover {
+        background-color: #e9ecef;
+    }
+/*
+#007bff
+*/
+
+/* Estilos Globales */
+body {
+    font-family: Arial, sans-serif;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+}
+
+footer {
+    padding: 20px;
+    text-align: center;
+    color: #fff;
+}
+
+/* Student: Azul */
+.student-page header, .student-page footer {
+    background-color: #004080; /* Azul */
+}
+
+/* Teacher: Verde */
+.teacher-page header, .teacher-page footer {
+    background-color: #274ec2; /* Verde */
+}
+
+/* Admin: Rojo */
+.admin-page header, .admin-page footer {
+    background-color: #b22222; /* Rojo */
+}

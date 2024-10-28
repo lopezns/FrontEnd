@@ -1,0 +1,31 @@
+.auth-container {
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    position: relative; 
+}
+.auth-image {
+    flex: 1; 
+    background-size: cover; 
+    background-position: center; 
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    height: 100%; 
+    z-index: -1; 
+}
+
+.auth-form {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+    max-width: 500px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative; 
+    z-index: 1;
+
+}
