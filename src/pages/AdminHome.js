@@ -1026,14 +1026,14 @@ const handleUpdatePermission = async () => {
 
     return (
         <div className={`admin-home ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
-            <header className="header">
-                <img src={logoP} alt="Logo Proyecto" className="logoP" />
-                <h1>Sistema de Gestión de Recursos y Aulas de Laboratorio</h1>
-                <div className="header-buttons">
-
-                    <button onClick={handleLogout}>Cerrar Sesión</button>
-                </div>
-            </header>
+<header className="header">
+    <img src={logoP} alt="Logo Proyecto" className="logoP" />
+    <h1>Sistema de Gestión de Recursos y Aulas de Laboratorio</h1>
+    <div className="header-buttons">
+        <button onClick={handleLogout}>Cerrar Sesión</button>
+        <button onClick={() => window.location.href = '/Unity'}>Simulador Unity</button>
+    </div>
+</header>
 
             <div className="main-container">
                 <div className="table-buttons-left">
