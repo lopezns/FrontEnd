@@ -1,5 +1,5 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Consolas', monospace; /* Cambiar fuente a Consolas */
     position: relative;
     margin: 0;
     padding: 0;
@@ -9,16 +9,16 @@ body {
 
 body::before {
     content: '';
-    position: absolute;
+    position: fixed; /* Cambiar a fixed para ocupar siempre la pantalla */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-image: url('../assets/p5.jpg');
-    background-size: cover;
+    background-size: cover; /* Asegura que la imagen cubra toda la pantalla */
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 8; /* Ajusta el nivel de opacidad (0.5 = 50% opaco) */
+    opacity: 1; /* Ajusta el nivel de opacidad (0.5 = 50% opaco) */
     z-index: -1; /* Coloca el fondo detrás del contenido */
 }
 
@@ -37,5 +37,5 @@ button {
 
 /* Cambios para AdminHome */
 .admin-home button {
-    background-color: #141846; /* Rojo para AdminHome */
+    background-color: #141846; /* Rojo para AdminHome */
 }
