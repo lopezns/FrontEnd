@@ -63,11 +63,11 @@
 /* Estilos para la imagen de fondo */
 .background-image {
     width: 100%; /* Ajusta al ancho del contenedor */
-    height: auto; /* Mantiene la proporción */
-    position: absolute; /* Permite que la imagen esté detrás del formulario */
+    height: auto; /* Mantiene la proporciï¿½n */
+    position: absolute; /* Permite que la imagen estï¿½ detrï¿½s del formulario */
     top: 0; /* Alinea al top del contenedor */
     left: 0; /* Alinea al lado izquierdo del contenedor */
-    z-index: -1; /* Envía la imagen detrás del formulario */
+    z-index: -1; /* Envï¿½a la imagen detrï¿½s del formulario */
 }
 
 /* Resto del CSS permanece igual */
