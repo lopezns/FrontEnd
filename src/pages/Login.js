@@ -1,72 +1,3 @@
-/*
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Login.css';
-import backgroundImage from '../assets/Fondo.jpg'; 
-
-
-const Login = ({ onLogin }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
-    const navigate = useNavigate();
-
-    const users = [
-        { email: 'estudiante@example.com', password: 'estudiante123' },
-        { email: 'profesor@example.com', password: 'profesor123' },
-        { email: 'admin@example.com', password: 'admin123' },
-    ];
-
-    const handleLogin = (e) => {
-        e.preventDefault();
-        const user = users.find(user => user.email === email && user.password === password);
-        if (user) {
-            onLogin(user.email);
-            navigate(`/${user.email.split('@')[0]}Home`);
-        } else {
-            setErrorMessage('Correo o contraseña incorrectos.');
-        }
-    };
-
-    const handleRegisterRedirect = () => {
-        navigate('/register');
-    };
-
-    return (
-        <div className="auth-container">
-            <div className="auth-form">
-                <h2>Iniciar Sesi&oacute;n</h2>
-                {errorMessage && <p className="error-message">{errorMessage}</p>}
-                <form onSubmit={handleLogin}>
-                    <input
-                        type="email"
-                        placeholder="Correo Electr&oacute;nico"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Contrase&ntilde;a"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                    <button type="submit">Iniciar Sesi&oacute;n</button>
-                </form>
-                <p>
-                    &iquest;    No tienes una cuenta? <span className="register-link" onClick={handleRegisterRedirect}>Reg&iacute;strate aqu&iacute;</span>
-                </p>
-            </div>
-            <div className="auth-image" style={{ backgroundImage: `url(${backgroundImage})` }}></div>
-
-        </div>
-    );
-};
-
-export default Login;
-*/
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -83,7 +14,7 @@ const Login = ({ onLogin }) => {
 
         try {
             // Hacer la solicitud de inicio de sesión
-            const loginResponse = await axios.post(`https://electronicspace.somee.com/api/User_/login`, null, {
+            const loginResponse = await axios.post(https://electronicspace.somee.com/api/User_/login, null, {
                 params: {
                     Email: email,
                     Password: password
@@ -96,7 +27,7 @@ const Login = ({ onLogin }) => {
             console.log("Respuesta de inicio de sesión:", loginResponse.data);
             if (loginResponse.data.message === 'Login successful') {
                 // Si el inicio de sesión es exitoso, solicitar detalles del usuario
-                const userResponse = await axios.get(`https://electronicspace.somee.com/api/User_`, {
+                const userResponse = await axios.get(https://electronicspace.somee.com/api/User_, {
                     headers: { accept: 'text/plain' }
                 });
 
@@ -172,9 +103,11 @@ const Login = ({ onLogin }) => {
                     ¿No tienes una cuenta? <span className="register-link" onClick={handleRegisterRedirect}>Regístrate aquí</span>
                 </p>
             </div>
-            <div className="auth-image" style={{ backgroundImage: `url(${backgroundImage})` }}></div>
+            <div className="auth-image" style={{ backgroundImage: url(${backgroundImage}) }}></div>
         </div>
     );
+    
+    
 };
 
-export default Login;
+export default Login;
