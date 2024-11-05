@@ -1,14 +1,27 @@
+ 
+import { Pie } from 'react-chartjs-2';
+import React, { useState, useEffect } from 'react';
 
-
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import Chart from 'chart.js/auto';
 import axios from 'axios';
 import './AdminHome.css'; // Asegúrate de que este archivo contenga los estilos correctos
+import UserDashboard from './UserDashboard'; // Asegúrate de que la ruta sea correcta
 import logoP from '../assets/LOGOPROJECT.png'; // Asegúrate de usar la ruta correcta
+
+
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+
+
+
 
 const AdminHome = () => {
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [activeTable, setActiveTable] = useState(null); // Solo una tabla activa
+    //const [activeTable, setActiveTable] = useState(null); // Solo una tabla activa
 // GET STATUS EQUIPMENT
 const [status, setstatus] = useState([]);
 
@@ -25,6 +38,34 @@ const handleOpenEditPopup = (lab) => {
     setShowEditPopup(true);                           // Muestra el modal de edición
 };
 
+    // Variables de estado para manejar los IDs, modales y datos de usuario
+    const [editingUserTypeId, setEditingUserTypeId] = useState(null);
+    const [userTypeIdToDelete, setUserTypeIdToDelete] = useState(null);
+    const [showDeleteUserTypePopup, setShowDeleteUserTypePopup] = useState(false);
+    const [showEditUserTypePopup, setShowEditUserTypePopup] = useState(false);
+
+    const [showPopup, setShowPopup] = useState(false);
+    const handleOpenPopup = () => setShowPopup(true);
+    const handleClosePopup = () => setShowPopup(false);
+    // Funciones para abrir y cerrar los modales
+    const handleOpenEditUserTypePopup = () => {
+        setShowEditUserTypePopup(true);
+    };
+
+    const handleCloseEditUserTypePopup = () => {
+        setShowEditUserTypePopup(false);
+        setEditingUserTypeId(null); // Restablece el ID de edición
+    };
+
+    const handleOpenDeleteUserTypePopup = (id) => {
+        setUserTypeIdToDelete(id);
+        setShowDeleteUserTypePopup(true);
+    };
+
+    const handleCloseDeleteUserTypePopup = () => {
+        setShowDeleteUserTypePopup(false);
+        setUserTypeIdToDelete(null); // Restablece el ID de eliminación
+    };
 
 
 //ACA ESTA
@@ -45,10 +86,18 @@ const handleOpenEditUserPopup = (user) => {
     }
 };
 
+const handleCloseEditStatusPopup = () => {
+    console.log("Cerrando modal de edición de estado de equipo"); // Verificación en consola
+    setEditingStatusId(null); // Cambia el estado para cerrar el modal
+};
 
 
 const handleOpenEditStatusReservationPopup = () => {
     // Lógica para abrir el modal de edición
+};
+const handleCloseEditReservationPopup = () => {
+    console.log("Intentando cerrar el modal de edición de reserva"); // Verifica en la consola
+    setEditingReservationId(null); // Cambia el estado que controla la visibilidad del modal
 };
 
 
@@ -94,7 +143,14 @@ const [editingPermissionName, setEditingPermissionName] = useState('');
 const [permissionToDelete, setPermissionToDelete] = useState(null);
 const [showDeletePermissionPopup, setShowDeletePermissionPopup] = useState(false);
 
+const [searchName, setSearchName] = useState('');
+const [filteredUsers, setFilteredUsers] = useState([]);
+const [showSearchResultsPopup, setShowSearchResultsPopup] = useState(false);
 
+const handleCloseSearchResultsPopup = () => {
+    setShowSearchResultsPopup(false);
+    setFilteredUsers([]);
+};
 // Funciones para abrir/cerrar los modales
 const handleOpenCreatePermissionPopup = () => setShowCreatePermissionPopup(true);
 const handleCloseCreatePermissionPopup = () => setShowCreatePermissionPopup(false);
@@ -108,10 +164,32 @@ const [userToEdit, setUserToEdit] = useState(null);
 const [userToDelete, setUserToDelete] = useState(null);
 const [showCreateUserPopup, setShowCreateUserPopup] = useState(false);
 const [showEditUserPopup, setShowEditUserPopup] = useState(false);
+const [searchTerm, setSearchTerm] = useState('');
 
 
+const [showCreateUserPermissionPopup, setShowCreateUserPermissionPopup] = useState(false);
+const [showEditUserPermissionPopup, setShowEditUserPermissionPopup] = useState(false);
+const [showDeleteUserPermissionPopup, setShowDeleteUserPermissionPopup] = useState(false);
+
+const [editingUserPermissionId, setEditingUserPermissionId] = useState(null);
+const [userPermissionIdToDelete, setUserPermissionIdToDelete] = useState(null);
+const handleCloseEditEEPopup = () => {
+    console.log("Intentando cerrar el modal de edición");
+    setEditingEquipmentId(null); // O cualquier estado que controle la visibilidad del modal
+};
 
 
+const handleOpenCreateUserPermissionPopup = () => setShowCreateUserPermissionPopup(true);
+const handleCloseCreateUserPermissionPopup = () => setShowCreateUserPermissionPopup(false);
+
+const handleOpenEditUserPermissionPopup = () => setShowEditUserPermissionPopup(true);
+const handleCloseEditUserPermissionPopup = () => setShowEditUserPermissionPopup(false);
+
+const handleOpenDeleteUserPermissionPopup = (id) => {
+    setUserPermissionIdToDelete(id);
+    setShowDeleteUserPermissionPopup(true);
+};
+const handleCloseDeleteUserPermissionPopup = () => setShowDeleteUserPermissionPopup(false);
 
 
 const handleCloseDeleteUserPopup = () => setShowDeleteUserPopup(false);
@@ -121,7 +199,7 @@ const handleCloseEditUserPopup = () => setShowEditUserPopup(false);
 
 
 const handleOpenEditReservationPopup = () => {/* lógica para abrir el modal */};
-const handleCloseEditReservationPopup = () => {/* lógica para cerrar el modal */};
+
 const handleOpenDeleteReservationPopup = () => setShowDeleteReservationPopup(true);
 const handleCloseDeleteReservationPopup = () => setShowDeleteReservationPopup(false);
 
@@ -130,9 +208,17 @@ const [showDeleteStatusPopup, setShowDeleteStatusPopup] = useState(false);
 const [statusToDelete, setStatusToDelete] = useState(null);
 const [editingStatusId, setEditingStatusId] = useState(null);
 const [editingStatus, setEditingStatus] = useState('');
-
+const [dashboards, setDashboards] = useState([]);
 const [reservationEquipmentToDelete, setReservationEquipmentToDelete] = useState(null);
 
+
+const handleSearchUsers = () => {
+    const results = users.filter(user => 
+        user.first_Name.toLowerCase().includes(searchName.toLowerCase())
+    );
+    setFilteredUsers(results);
+    setShowSearchResultsPopup(true); // Abre el popup con los resultados
+};
 
 // Variables de estado para el formulario de creación y edición
 const handleOpenCreateReservationPopup = () => {
@@ -206,7 +292,6 @@ const handleOpenEditEquipmentPopup = (equipment) => {
 
 
 
-
 const handleOpenDeleteUserPopup = (userId) => {
     if (userId) {
         setUserIdToDelete(userId); // Guardamos el userId en el estado
@@ -232,7 +317,7 @@ const [showEditStatusPopup, setShowEditStatusPopup] = useState(false); // Contro
 
 // Función para abrir y cerrar el popup de edición
 
-const handleCloseEditStatusPopup = () => setShowEditStatusPopup(false);
+
 
 
     const handleCloseEditPopup = () => setShowEditPopup(false);
@@ -245,9 +330,12 @@ const handleCloseEditStatusPopup = () => setShowEditStatusPopup(false);
 
     const [laboratoryNum, setLaboratoryNum] = useState(''); // inicializado como cadena vacía
     const [capacity, setCapacity] = useState(0); // puedes usar 0 o algún valor inicial
-    
+    const handleCloseEquipmentClose= () => {
+        setIsEditPopupOpen(false); // Desactiva la visibilidad del popup
+    };
     // Estado para almacenar los datos de cada tabla
     const [laboratories, setLaboratories] = useState([]);
+
     const [equipments, setEquipments] = useState([]);
     const [inventory, setInventory] = useState([]);
     const [permissions, setPermissions] = useState([]);
@@ -271,9 +359,7 @@ const handleOpenEditReservationEquipmentPopup = () => {
 };
 
 // Función para cerrar el popup de edición
-const handleCloseEditReservationEquipmentPopup = () => {
-    setIsEditPopupOpen(false); // Desactiva la visibilidad del popup
-};
+
 //POST 2
     const [equipmentName, setequipmentName] = useState([]);
     const [description, setdescription] = useState([]);
@@ -324,6 +410,10 @@ const [editingCapacity, setEditingCapacity] = useState('');
 const handleOpenCreateUserPopup = () => setShowCreateUserPopup(true);
 const handleCloseCreateUserPopup = () => setShowCreateUserPopup(false);
 //Filter Ayuda
+const handleCloseEditReservationEquipmentPopup = () => {
+    console.log("Cerrando modal de edición de reserva de equipo"); // Mensaje de verificación en la consola
+    setEditingReservationEquipmentId(null); // Actualiza el estado que controla la visibilidad del modal
+};
 
 const [filterId, setFilterId] = useState('');
 const [filteredUserTypes, setFilteredUserTypes] = useState(userTypes); // Estado para almacenar los tipos de usuario filtrados
@@ -856,7 +946,46 @@ const handleUpdatePermission = async () => {
                         console.error('Error actualizando usuario:', error);
                     }
                 };
+//PUT USER PERMISSION
 
+                const handleUpdateUserPermission = async (userPermissionId, userId, permissionId) => {
+                    if (!userPermissionId) {
+                        console.error("No se encontró el permiso de usuario a editar.");
+                        return;
+                    }
+
+                    try {
+                        const response = await axios.put(
+                            `https://electronicspace.somee.com/api/User_Permission_/${userPermissionId}?UserTypeId=${userId}&permissionId=${permissionId}`,
+                            {}, 
+                            { headers: { accept: 'text/plain' } }
+                        );
+                        console.log('Permiso de usuario actualizado:', response.data);
+                        fetchData('userPermission'); // Refresca la lista de permisos de usuario
+                    } catch (error) {
+                        console.error('Error actualizando permiso de usuario:', error);
+                    }
+                };
+//PUT USER TYPE
+
+const handleUpdateUserType = async (userTypeId, userType) => {
+    if (!userTypeId) {
+        console.error("No se encontró el tipo de usuario a editar.");
+        return;
+    }
+
+    try {
+        const response = await axios.put(
+            `https://electronicspace.somee.com/api/User_Type_/${userTypeId}?UserType=${userType}`,
+            {},
+            { headers: { accept: 'text/plain' } }
+        );
+        console.log('Tipo de usuario actualizado:', response.data);
+        fetchData('userType'); // Refresca la lista de tipos de usuario
+    } catch (error) {
+        console.error('Error actualizando tipo de usuario:', error);
+    }
+};
 
 
 //ALGO QUE FUNCIONA POR ACÁ
@@ -1023,238 +1152,488 @@ const handleUpdatePermission = async () => {
                 }
             };
 //AQUI TERMINA EL DELETE
+//AQUI COMIENZA LAS GRAFICAS
+
+                // Configuración de datos para el gráfico de barras
+                const chartData = {
+                    labels: laboratories.map((lab) => `Laboratorio ${lab.laboratory_Num}`),
+                    datasets: [
+                        {
+                            label: 'Capacidad de cada laboratorio',
+                            data: laboratories.map((lab) => lab.capacity),
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                        },
+                    ],
+                };
+
+                const chartOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Laboratorios',
+                            },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Capacidad',
+                            },
+                        },
+                    },
+                };
+
+//2DO
+
+                const equipmentStatusCount = equipments.reduce((acc, equip) => {
+                    const status = equip.status_Equipment ? equip.status_Equipment.status : 'N/A';
+                    acc[status] = (acc[status] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const EchartData = {
+                    labels: Object.keys(equipmentStatusCount),
+                    datasets: [
+                        {
+                            data: Object.values(equipmentStatusCount),
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                            ],
+                            borderColor: 'rgba(255, 255, 255, 1)',
+                            borderWidth: 1,
+                        },
+                    ],
+                };
+
+                const EchartOptions = {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    },
+                };
+//3RO
+
+
+                    const inventoryCountByLab = inventory.reduce((acc, item) => {
+                        const labId = item.laboratory ? item.laboratory.laboratory_Num : 'N/A';
+                        acc[labId] = acc[labId] || {};
+                        const itemName = item.equipment ? item.equipment.equipment_Name : 'N/A';
+                        acc[labId][itemName] = (acc[labId][itemName] || 0) + item.available_quantity;
+                        return acc;
+                        fetchData(''); // Refresca la lista de inventarios
+                    }, {});
+
+                    // Obtener todos los nombres únicos de los items en todos los laboratorios
+                    const allItems = new Set();
+                    for (const lab in inventoryCountByLab) {
+                        Object.keys(inventoryCountByLab[lab]).forEach(itemName => allItems.add(itemName));
+                    }
+                    const labels = Array.from(allItems); // Nombres de todos los items
+
+                    // Crear un conjunto de datos para cada laboratorio
+                    const datasets = [];
+                    const colors = [
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(201, 203, 207, 0.6)',
+                        'rgba(255, 20, 147, 0.6)',
+                        'rgba(255, 215, 0, 0.6)',
+                        'rgba(0, 255, 127, 0.6)',
+                        'rgba(75, 0, 130, 0.6)',
+                    ];
+
+                    let colorIndex = 0; // Índice para los colores
+
+                    for (const lab in inventoryCountByLab) {
+                        const items = inventoryCountByLab[lab];
+                        
+                        // Asegurarse de que cada conjunto de datos tenga valores para todos los labels (items)
+                        const itemData = labels.map(itemName => items[itemName] || 0);
+
+                        datasets.push({
+                            label: `Laboratorio ${lab}`, // Etiqueta del laboratorio
+                            data: itemData, // Cantidad de items
+                            backgroundColor: itemData.map(() => colors[colorIndex++ % colors.length]), // Asignar un color único a cada barra
+                            borderColor: 'rgba(255, 255, 255, 1)', // Color del borde
+                            borderWidth: 1,
+                        });
+                    }
+
+                    const IEchartData = {
+                        labels: labels, // Nombres de los items
+                        datasets: datasets,
+                    };
+
+                    const IEchartOptions = {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                        },
+                    };
+
+
+
+//ACÁ TERMINAN LAS GRAFICAS
+
+
+
+
+//NECESITO UN ACTUALIZAR
+
+                const [activeTable, setActiveTable] = useState('user');
+
+                // Efecto para obtener los usuarios al montar el componente
+                useEffect(() => {
+                    const fetchUsers = async () => {
+                        try {
+                            const response = await axios.get('https://electronicspace.somee.com/api/User_', {
+                                headers: { accept: 'text/plain' }
+                            });
+                            setUsers(response.data); // Almacenar los datos de usuarios en el estado
+                        } catch (error) {
+                            console.error("Error fetching users:", error);
+                        }
+                    };
+
+                    const fetchLaboratories = async () => {
+                        try {
+                            const response = await axios.get('https://electronicspace.somee.com/api/Laboratory_', {
+                                headers: { accept: 'text/plain' }
+                            });
+                            setLaboratories(response.data); // Almacenar los datos de laboratorios en el estado
+                        } catch (error) {
+                            console.error("Error fetching laboratories:", error);
+                        }
+                    };
+
+                    fetchUsers(); // Llamada a la función para obtener usuarios
+                    fetchLaboratories(); // Llamada a la función para obtener laboratorios
+                }, []); // El array vacío asegura que solo se ejecute el componente
+
+
+                // Función para manejar clics fuera del contenido del popup
+                const handleCloseOnOutsideClick = (e) => {
+                    if (e.target.classList.contains('modal')) {
+                        setShowCreatePopup(false);
+                        setShowEditPopup(false);
+                        setShowDeletePopup(false);
+                    }
+                };
+
+
 
     return (
         <div className={`admin-home ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
-<header className="header">
-    <img src={logoP} alt="Logo Proyecto" className="logoP" />
-    <h1>Sistema de Gestión de Recursos y Aulas de Laboratorio</h1>
-    <div className="header-buttons">
-        <button onClick={handleLogout}>Cerrar Sesión</button>
-        <button onClick={() => window.location.href = '/Unity'}>Simulador Unity</button>
-    </div>
-</header>
+            <header className="header">
+                <img src={logoP} alt="Logo Proyecto" className="logoP" />
+                <h1>Sistema de Gestión de Recursos y Aulas de Laboratorio</h1>
+                <div className="header-buttons">
+                    <button onClick={handleLogout}>Cerrar Sesión</button>
+                    <button onClick={() => navigate('/Unity')}>Simulador Unity</button>
+                </div>
+            </header>
 
             <div className="main-container">
-                <div className="table-buttons-left">
-                    {['laboratory', 'equipments', 'inventory', 'permission', 'reservation','reservationequipment', 'statusequipment','statusreservation', 'user', 'userPermission', 'userType'].map((table) => (
-                        <button key={table} onClick={() => handleTableClick(table)}>
-                            {table.charAt(0).toUpperCase() + table.slice(1)} <span>{activeTable === table ? '▲' : '▼'}</span>
-                        </button>
-                    ))}
-                </div>
+            <div className="table-buttons-left">
+                {['Dashboards', 'laboratory', 'equipments', 'inventory', 'permission', 'reservation', 'reservationequipment', 'statusequipment', 'statusreservation', 'user', 'userPermission', 'userType'].map((table) => (
+                    <button key={table} onClick={() => handleTableClick(table)}>
+                        {table.charAt(0).toUpperCase() + table.slice(1)} <span>{activeTable === table ? '▲' : '▼'}</span>
+                    </button>
+                ))}
+            </div>
 
                 <div className="table-details-right">
                     {activeTable && (
                         <>
                             <h2>{activeTable.charAt(0).toUpperCase() + activeTable.slice(1)} Details</h2>
 
+{/* DASHBOARDS */}
 
+                        {activeTable === 'Dashboards' && (
+                                            <div>
+                                            <div>
+                                            <UserDashboard users={users} />
 
-{/* LABORATORY */}
-                                    {activeTable === 'laboratory' && laboratories.length > 0 && (
-                            <div>
-                                <h3>Crear Laboratorio:</h3>
-                                <button onClick={handleOpenCreatePopup}>CREAR</button>
+                                               {/* Búsqueda de usuarios */}
+                                                <h3>Buscar Usuario por Nombre:</h3>
+                                                <input
+                                                    type="text"
+                                                    value={searchName}
+                                                    onChange={(e) => setSearchName(e.target.value)}
+                                                    placeholder="Nombre a buscar"
+                                                />
+                                                <button onClick={() => {
+                                                    const filteredUsers = users.filter(user => 
+                                                        user.first_Name && user.first_Name.toLowerCase().includes(searchName.toLowerCase())
+                                                    );
+                                                    setFilteredUsers(filteredUsers);
+                                                    setShowSearchResultsPopup(true);
+                                                }}>
+                                                    BUSCAR
+                                                </button>
 
-                                {/* Modal de Crear */}
-                                {showCreatePopup && (
-                                    <div className="modal">
-                                        <div className="modal-content">
-                                            <span className="close" onClick={handleCloseCreatePopup}>&times;</span>
-                                            <h3>Crear Nuevo Laboratorio</h3>
-                                            <input
-                                                type="number"
-                                                value={laboratoryNum}
-                                                onChange={(e) => setLaboratoryNum(Number(e.target.value))}
-                                                placeholder="Número de Laboratorio"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={capacity}
-                                                onChange={(e) => setCapacity(Number(e.target.value))}
-                                                placeholder="Capacidad"
-                                            />
-                                            <button onClick={() => { handleCreateLaboratory(); handleCloseCreatePopup(); }}>
-                                                CREAR
-                                            </button>
+                                                 {/* Modal de Resultados de Búsqueda */}
+                                            {showSearchResultsPopup && (
+                                                <div className="modal">
+                                                    <div className="modal-content">
+                                                        <span className="close" onClick={handleCloseSearchResultsPopup}>&times;</span>
+                                                        <h3>Resultados de Búsqueda:</h3>
+                                                        <table className="styled-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>ID</th>
+                                                                    <th>Nombre</th>
+                                                                    <th>Apellido</th>
+                                                                    <th>Email</th>
+                                                                    <th>Tipo de Usuario</th>
+                                                                    <th>Eliminado</th>
+                                                                    <th>Acciones</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {filteredUsers.length > 0 ? (
+                                                                    filteredUsers.map(user => (
+                                                                        <tr key={user.user_ID}>
+                                                                            <td>{user.user_ID}</td>
+                                                                            <td>{user.first_Name || 'Sin nombre'}</td>
+                                                                            <td>{user.last_Name || 'Sin apellido'}</td>
+                                                                            <td>{user.email || 'N/A'}</td>
+                                                                            <td>{user.user_Type?.userType || 'N/A'}</td>
+                                                                            <td>{user.isDeleted ? 'Sí' : 'No'}</td>
+                                                                            <td>
+                                                                                {/* Botón de Editar */}
+                                                                                <button onClick={() => {
+                                                                                    setEditingUserId(user.user_ID);
+                                                                                    setfirstName(user.first_Name || '');
+                                                                                    setlastName(user.last_Name || '');
+                                                                                    setemail(user.email || '');
+                                                                                    setpassword(''); // Dejar vacío por motivos de seguridad
+                                                                                    setuserTypeID(user.user_Type?.userTypeID || 0);
+                                                                                    handleOpenEditUserPopup();
+                                                                                }}>Editar</button>
+
+                                                                                {/* Botón de Eliminar con Modal de Confirmación */}
+                                                                                <button onClick={() => handleOpenDeleteUserPopup(user.user_ID)}>Eliminar</button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))
+                                                                ) : (
+                                                                    <tr>
+                                                                        <td colSpan="7">No se encontraron usuarios.</td>
+                                                                    </tr>
+                                                                )}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            )}
+                                                
+                                                <div className="spacing"></div> {/* Espaciador */}
+                                            </div>
+
+                                     
+                                            <div className="spacing"></div> {/* Espaciador */}
+                                            
+                                            <button onClick={handleOpenPopup}>Explicación del Sistema de Gestión</button>
+                                
+                                            {showPopup && (
+                                                <div className="popup">
+                                                    <div className="popup-content">
+                                                        <h2>Explicación del Sistema de Gestión</h2>
+                                                        <div className="popup-text">
+                                                            <p>
+                                                                El sistema de gestión para el simulador de instrumentos de electrónica, desarrollado en el CADI de Desarrollo de Software Seguro, se centra en mejorar la experiencia educativa y optimizar la administración de recursos en un entorno académico. La plataforma gestiona roles específicos (Estudiante, Profesor y Administrador), y ofrece una interfaz adaptada a las necesidades de cada usuario, incluyendo funcionalidades avanzadas en cuanto a políticas de seguridad y requisitos de autenticación.
+                                                            </p>
+                                                            <p>
+                                                                <strong>Link Netlify (Frontend Desplegado):</strong> <a href="https://digilabmanagmentsystem.netlify.app/login" target="_blank" rel="noopener noreferrer">https://digilabmanagmentsystem.netlify.app/login</a>
+                                                            </p>
+                                                            <p>
+                                                                En caso de que aparezca error dar clic en: Back to our site
+                                                            </p>
+                                                            <p>
+                                                                <strong>Link Repositorio FrontEnd:</strong> <a href="https://github.com/lopezns/FrontEnd" target="_blank" rel="noopener noreferrer">https://github.com/lopezns/FrontEnd</a><br />
+                                                                <strong>Link Repositorio Backend:</strong> <a href="https://github.com/Mariana-Pinzon/Electronics-Laboratory-Classroom-and-Resource-Management-System" target="_blank" rel="noopener noreferrer">https://github.com/Mariana-Pinzon/Electronics-Laboratory-Classroom-and-Resource-Management-System</a><br />
+                                                                <strong>Link Somee:</strong> <a href="https://electronicspace.somee.com/swagger/index.html" target="_blank" rel="noopener noreferrer">https://electronicspace.somee.com/swagger/index.html</a>
+                                                            </p>
+                                
+                                                            <h4>Estructura y Roles del Sistema</h4>
+                                                            <h5>Rol de Administrador</h5>
+                                                            <p>
+                                                                El Administrador tiene el acceso más amplio dentro del sistema, con funcionalidades que incluyen:
+                                                            </p>
+                                                            <ul>
+                                                                <li><strong>Gestión Completa de Recursos:</strong> Puede consumir todos los endpoints, incluyendo creación, modificación y eliminación de inventarios, permisos, reservas y laboratorios.</li>
+                                                                <li><strong>Mantenimiento de la Seguridad:</strong> Protege los datos y la integridad del sistema, limitando accesos según el rol de cada usuario.</li>
+                                                            </ul>
+                                                            <h5>Rol de Profesor</h5>
+                                                            <p>
+                                                                El Profesor interactúa principalmente para apoyar la educación de los estudiantes, con funcionalidades como:
+                                                            </p>
+                                                            <ul>
+                                                                <li><strong>Apoyo Educativo:</strong> Ayuda en el uso de equipos y brinda orientación a los estudiantes.</li>
+                                                                <li><strong>Acceso a Datos:</strong> Permite a los profesores ver información sobre el rendimiento de los estudiantes y sus reservas de equipos.</li>
+                                                            </ul>
+                                                            <h5>Rol de Estudiante</h5>
+                                                            <p>
+                                                                Los Estudiantes son usuarios que interactúan con el sistema para realizar prácticas y actividades de aprendizaje, con funcionalidades como:
+                                                            </p>
+                                                            <ul>
+                                                                <li><strong>Reserva de Equipos:</strong> Pueden reservar los equipos necesarios para sus prácticas en el laboratorio.</li>
+                                                                <li><strong>Consulta de Disponibilidad y Visualización de Datos:</strong> Verifica la disponibilidad de implementos y evalúa su progreso en el simulador de instrumentos.</li>
+                                                            </ul>
+                                
+                                                            <h4>Funcionalidades de Programación y Seguridad</h4>
+                                                            <h5>2.1 Autenticación de Usuarios y Registro Seguro</h5>
+                                                            <p>
+                                                                El sistema emplea una autenticación avanzada que asegura que cada usuario acceda según su rol, y el proceso de registro incorpora:
+                                                            </p>
+                                                            <ul>
+                                                                <li><strong>Validación de Contraseñas:</strong> La contraseña debe cumplir con requisitos mínimos de seguridad (8 caracteres, al menos 1 número, 1 mayúscula, y 1 carácter especial).</li>
+                                                                <li><strong>Confirmación de Contraseña:</strong> Se agregó un campo de confirmación de contraseña para evitar errores en el registro.</li>
+                                                                <li><strong>Aceptación de Términos y Condiciones:</strong> Incluye un checkbox de aceptación de términos alineado con la ISO 27001.</li>
+                                                            </ul>
+                                                            <h5>2.2 Sistema de Registro y Manejo de Roles</h5>
+                                                            <p>
+                                                                El proceso de registro en el sistema asigna roles específicos (estudiante o profesor), gestionados desde el backend:
+                                                            </p>
+                                                            <ul>
+                                                                <li><strong>Encriptación de Contraseñas:</strong> Asegura que las contraseñas no sean visibles para otros usuarios.</li>
+                                                                <li><strong>Backend Seguro:</strong> Los endpoints gestionan y protegen la información de cada usuario.</li>
+                                                            </ul>
+                                                            <h5>2.3 Visualización de Información en el Simulador</h5>
+                                                            <p>
+                                                                En el entorno de Unity, los estudiantes pueden acceder a:
+                                                            </p>
+                                                            <ul>
+                                                                <li><strong>Visualización de Datos de Aprendizaje y Jugabilidad:</strong> Se muestran niveles de aprendizaje, gráficas de progreso y tiempos de inicio.</li>
+                                                                <li><strong>Clasificación de Niveles y Progreso:</strong> El simulador divide los niveles de aprendizaje en fases para brindar un análisis detallado.</li>
+                                                            </ul>
+                                
+                                                            <h4>Requisitos y Evaluaciones del Sistema</h4>
+                                                            <h5>3.1 Login (Autenticación de Usuarios)</h5>
+                                                            <p>Acceso Seguro: Sólo permite el acceso a usuarios con credenciales válidas.</p>
+                                                            <h5>3.2 Consulta de Información</h5>
+                                                            <p>Carga de Datos desde el Backend: Filtrados dinámicos que permiten una búsqueda eficiente.</p>
+                                                            <h5>3.3 Formularios de Creación y Actualización</h5>
+                                                            <p>Validaciones Clave: Los formularios obligan a que los campos necesarios sean completados.</p>
+                                                            <h5>3.4 Publicación de la Aplicación</h5>
+                                                            <p>Entorno Accesible: La aplicación está desplegada en un entorno accesible con instrucciones claras.</p>
+                                                            <h5>3.5 Repositorio con Control de Versiones</h5>
+                                                            <p>Historial de Desarrollo Documentado: Con frecuencia de commits y mensajes claros que reflejan la evolución del sistema.</p>
+                                
+                                                            <h4>Funcionalidades Adicionales</h4>
+                                                            <p>Interfaz y Visualización de Datos:</p>
+                                                            <p>La implementación de Unity permite una visualización detallada del aprendizaje del estudiante, incluyendo:</p>
+                                                            <ul>
+                                                                <li><strong>Datos de Jugabilidad y Aprendizaje:</strong> Información sobre el progreso de los estudiantes y categorización de niveles.</li>
+                                                                <li><strong>Filtros Dinámicos en Endpoints:</strong> Facilitan la búsqueda y categorización, mejorando la eficiencia.</li>
+                                                            </ul>
+                                                        </div>
+                                                        <button onClick={handleClosePopup}>Cerrar</button>
+                                                    </div>
+                                                    <div className="popup-overlay" onClick={handleClosePopup}></div>
+                                                </div>
+                                                
+                                            )}
+                                                      <div className="spacing"></div> {/* Espaciador */}
                                         </div>
-                                    </div>
-                                )}
-                                {/* Modal de Editar */}
-                                {showEditPopup && (
-                                    <div className="modal">
-                                        <div className="modal-content">
-                                            <span className="close" onClick={handleCloseEditPopup}>&times;</span>
-                                            <h3>Editar Laboratorio</h3>
-                                            <input
-                                                type="number"
-                                                value={editingLaboratoryNum}
-                                                onChange={(e) => setEditingLaboratoryNum(Number(e.target.value))}
-                                                placeholder="Número de Laboratorio"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={editingCapacity}
-                                                onChange={(e) => setEditingCapacity(Number(e.target.value))}
-                                                placeholder="Capacidad"
-                                            />
-                                            <button onClick={() => { handleUpdateLaboratory(); handleCloseEditPopup(); }}>
-                                                Guardar Cambios
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-
-                                {/* Modal de Confirmación para Eliminar */}
-                                {showDeletePopup && (
-                                    <div className="modal">
-                                        <div className="modal-content">
-                                            <span className="close" onClick={handleCloseDeletePopup}>&times;</span>
-                                            <h3>¿Estás seguro de que deseas eliminar este laboratorio?</h3>
-                                            <button onClick={() => { handleDeleteLaboratory(laboratoryToDelete); handleCloseDeletePopup(); }}>
-                                                Confirmar
-                                            </button>
-                                            <button onClick={handleCloseDeletePopup}>Cancelar</button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="data-list">
-                                    <h3>Datos Encontrados:</h3>
-                                    <table className="styled-table">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Laboratorio</th>
-                                                <th>Capacidad</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        {laboratories.map((lab) => (
-                                            <tr key={lab.laboratoryID}>
-                                                <td>{lab.laboratory_ID}</td>
-                                                <td>{lab.laboratory_Num}</td>
-                                                <td>{lab.capacity}</td>
-                                                <td>
-                                                <button onClick={() => handleOpenEditPopup(lab)}>
-                                                                Editar
-                                                            </button>
-
-                                                    <button onClick={() => handleOpenDeletePopup(lab.laboratory_ID)}>Eliminar</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-
-                                    </table>
-                                </div>
-                            </div>
+                                        
+                                
                         )}
 
 
-{/* EQUIPMENT */}
-                            {activeTable === 'equipments' && equipments.length > 0 && (
+
+{/* LABORATORY */}
+                            {activeTable === 'laboratory' && laboratories.length > 0 && (
                                 <div>
-                                    <h3>Crear Equipment:</h3>
+
+                                    
+                                    {/* Dashboard con gráfico */}
+                                    <div style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
+                                        <h4>Capacidad en cada Laboratorio</h4>
+                                        <Bar data={chartData} options={chartOptions} />
+                                    </div>
+                                    
+                                    <div className="spacing"></div> {/* Espaciador */}
+
+                                    {/* Botón para crear un nuevo laboratorio */}
+                                    <h3>Crear Laboratorio:</h3>
                                     <button onClick={handleOpenCreatePopup}>CREAR</button>
 
                                     {/* Modal de Crear */}
                                     {showCreatePopup && (
-                                        <div className="modal">
-                                            <div className="modal-content">
+                                        <div className="modal" onClick={handleCloseCreatePopup}>
+                                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                                                 <span className="close" onClick={handleCloseCreatePopup}>&times;</span>
-                                                <h3>Crear Nuevo Equipo</h3>
+                                                <h3>Crear Nuevo Laboratorio</h3>
                                                 <input
-                                                    type="text"
-                                                    value={equipmentName}
-                                                    onChange={(e) => setequipmentName(e.target.value)}
-                                                    placeholder="Nombre del Equipo"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    value={description}
-                                                    onChange={(e) => setdescription(e.target.value)}
-                                                    placeholder="Descripción del Equipo"
+                                                    type="number"
+                                                    value={laboratoryNum}
+                                                    onChange={(e) => setLaboratoryNum(Number(e.target.value))}
+                                                    placeholder="Número de Laboratorio"
                                                 />
                                                 <input
                                                     type="number"
-                                                    value={statusE_ID}
-                                                    onChange={(e) => setstatusE_ID(Number(e.target.value))}
-                                                    placeholder="ID del Estado (inicialmente 1)"
+                                                    value={capacity}
+                                                    onChange={(e) => setCapacity(Number(e.target.value))}
+                                                    placeholder="Capacidad"
                                                 />
-                                                <input
-                                                    type="date"
-                                                    value={acquisitionDate}
-                                                    onChange={(e) => setacquisitionDate(e.target.value)}
-                                                    placeholder="Fecha de Adquisición (YYYY-MM-DD)"
-                                                />
-                                                <input
-                                                    type="number"
-                                                    value={laboratoryID}
-                                                    onChange={(e) => setlaboratoryID(Number(e.target.value))}
-                                                    placeholder="ID del Laboratorio"
-                                                />
-                                                <button onClick={() => { handleCreateEquipment(equipmentName, description, statusE_ID, acquisitionDate, laboratoryID); handleCloseCreatePopup(); }}>
+                                                <button onClick={() => { handleCreateLaboratory(); handleCloseCreatePopup(); }}>
                                                     CREAR
                                                 </button>
                                             </div>
                                         </div>
                                     )}
-
+                                    
                                     {/* Modal de Editar */}
-                                    {editingEquipmentId && (
-                                        <div className="modal">
-                                            <div className="modal-content">
+                                    {showEditPopup && (
+                                        <div className="modal" onClick={handleCloseEditPopup}>
+                                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                                                 <span className="close" onClick={handleCloseEditPopup}>&times;</span>
-                                                <h3>Editar Equipo</h3>
+                                                <h3>Editar Laboratorio</h3>
                                                 <input
-                                                    type="text"
-                                                    value={editingEquipmentName}
-                                                    onChange={(e) => setEditingEquipmentName(e.target.value)}
-                                                    placeholder="Nombre del Equipo"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    value={editingDescription}
-                                                    onChange={(e) => setEditingDescription(e.target.value)}
-                                                    placeholder="Descripción del Equipo"
+                                                    type="number"
+                                                    value={editingLaboratoryNum}
+                                                    onChange={(e) => setEditingLaboratoryNum(Number(e.target.value))}
+                                                    placeholder="Número de Laboratorio"
                                                 />
                                                 <input
                                                     type="number"
-                                                    value={editingStatusEId}
-                                                    onChange={(e) => setEditingStatusEId(Number(e.target.value))}
-                                                    placeholder="ID del Estado"
+                                                    value={editingCapacity}
+                                                    onChange={(e) => setEditingCapacity(Number(e.target.value))}
+                                                    placeholder="Capacidad"
                                                 />
-                                                <input
-                                                    type="date"
-                                                    value={editingAcquisitionDate}
-                                                    onChange={(e) => setEditingAcquisitionDate(e.target.value)}
-                                                    placeholder="Fecha de Adquisición"
-                                                />
-                                                <input
-                                                    type="number"
-                                                    value={editingLaboratoryId}
-                                                    onChange={(e) => setEditingLaboratoryId(Number(e.target.value))}
-                                                    placeholder="ID del Laboratorio"
-                                                />
-                                                <button onClick={handleUpdateEquipment}>Editar Equipo</button>
+                                                <button onClick={() => { handleUpdateLaboratory(); handleCloseEditPopup(); }}>
+                                                    Guardar Cambios
+                                                </button>
                                             </div>
                                         </div>
                                     )}
 
                                     {/* Modal de Confirmación para Eliminar */}
                                     {showDeletePopup && (
-                                        <div className="modal">
-                                            <div className="modal-content">
+                                        <div className="modal" onClick={handleCloseDeletePopup}>
+                                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                                                 <span className="close" onClick={handleCloseDeletePopup}>&times;</span>
-                                                <h3>¿Estás seguro de que deseas eliminar este equipo?</h3>
-                                                <button onClick={async () => {
-                                                    await handleDeleteEquipment(equipmentToDelete); // Espera a que se complete la eliminación
-                                                    handleCloseDeletePopup(); // Cierra el popup después de eliminar
-                                                }}>
+                                                <h3>¿Estás seguro de que deseas eliminar este laboratorio?</h3>
+                                                <button onClick={() => { handleDeleteLaboratory(laboratoryToDelete); handleCloseDeletePopup(); }}>
                                                     Confirmar
                                                 </button>
                                                 <button onClick={handleCloseDeletePopup}>Cancelar</button>
@@ -1262,168 +1641,326 @@ const handleUpdatePermission = async () => {
                                         </div>
                                     )}
 
-                                    {/* Tabla de equipos existentes */}
-                                    <h3>Datos Encontrados:</h3>
-
-                                    <table className="styled-table">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Equipo</th>
-                                                <th>Descripción</th>
-                                                <th>Estado</th>
-                                                <th>Laboratorio</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {equipments.map(equip => (
-                                                <tr key={equip.equipment_ID || equip.id || equip.Equipment_ID}>
-                                                    <td>{equip.equipment_ID || equip.id || equip.Equipment_ID || 'Sin ID'}</td>
-                                                    <td>{equip.equipment_Name || 'N/A'}</td>
-                                                    <td>{equip.description || 'N/A'}</td>
-                                                    <td>{equip.status_Equipment ? equip.status_Equipment.status : 'N/A'}</td>
-                                                    <td>{equip.laboratory ? equip.laboratory.laboratory_Num || 'N/A' : 'N/A'}</td>
-                                                    <td>
-                                                        <button onClick={() => {
-                                                            // Cambiado el nombre de la función para abrir el popup de edición
-                                                            handleOpenEditEquipmentPopup(equip);
-                                                        }}>Editar</button>
-
-                                                        <button onClick={() => {
-                                                            setEquipmentToDelete(equip.equipment_ID || equip.id || equip.Equipment_ID);
-                                                            handleOpenDeletePopup();
-                                                        }}>Eliminar</button>
-                                                    </td>
+                                    <div className="data-list">
+                                        <h3>Datos Encontrados:</h3>
+                                        <table className="styled-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Laboratorio</th>
+                                                    <th>Capacidad</th>
+                                                    <th>Acciones</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-
-   {/* INVENTORY */}
-                {activeTable === 'inventory' && inventory.length > 0 && (
-                    <div>
-                        {/* Botón para crear un nuevo inventario */}
-                        <h3>Crear Inventario:</h3>
-                        <button onClick={handleOpenCreateInventoryPopup}>CREAR</button>
-
-                        {/* Modal de Crear Inventario */}
-                        {showCreateInventoryPopup && (
-                            <div className="modal">
-                                <div className="modal-content">
-                                    <span className="close" onClick={handleCloseCreateInventoryPopup}>&times;</span>
-                                    <h3>Crear Nuevo Inventario</h3>
-                                    <input
-                                        type="number"
-                                        value={equipmentID}
-                                        onChange={(e) => setequipmentID(Number(e.target.value))}
-                                        placeholder="ID del Equipo"
-                                    />
-                                    <input
-                                        type="number"
-                                        value={availableQuantity}
-                                        onChange={(e) => setavailableQuantity(Number(e.target.value))}
-                                        placeholder="Cantidad Disponible"
-                                    />
-                                    <input
-                                        type="number"
-                                        value={laboratoryID}
-                                        onChange={(e) => setlaboratoryID(Number(e.target.value))}
-                                        placeholder="ID del Laboratorio"
-                                    />
-                                    <button onClick={() => { handleCreateInventory(equipmentID, availableQuantity, laboratoryID); handleCloseCreateInventoryPopup(); }}>
-                                        CREAR
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Modal de Editar Inventario */}
-                        {editingInventoryId && (
-                            <div className="modal">
-                                <div className="modal-content">
-                                    <span className="close" onClick={handleCloseEditInventoryPopup}>&times;</span>
-                                    <h3>Editar Inventario</h3>
-                                    <input
-                                        type="number"
-                                        value={editingEquipmentId}
-                                        onChange={(e) => setEditingEquipmentId(Number(e.target.value))}
-                                        placeholder="ID del Equipo"
-                                    />
-                                    <input
-                                        type="number"
-                                        value={editingAvailableQuantity}
-                                        onChange={(e) => setEditingAvailableQuantity(Number(e.target.value))}
-                                        placeholder="Cantidad Disponible"
-                                    />
-                                    <input
-                                        type="number"
-                                        value={editingLaboratoryId}
-                                        onChange={(e) => setEditingLaboratoryId(Number(e.target.value))}
-                                        placeholder="ID del Laboratorio"
-                                    />
-                                    <button onClick={() => { handleUpdateInventory(); handleCloseEditInventoryPopup(); }}>
-                                        GUARDAR CAMBIOS
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                            {/* Modal de Confirmación para Eliminar */}
-                            {showDeleteInventoryPopup && (
-                                <div className="modal">
-                                    <div className="modal-content">
-                                        <span className="close" onClick={handleCloseDeleteInventoryPopup}>&times;</span>
-                                        <h3>¿Estás seguro de que deseas eliminar este inventario?</h3>
-                                        <button onClick={async () => {
-                                            await handleDeleteEquipment(equipmentToDelete); // Asegúrate de que equipmentToDelete tenga el valor correcto
-                                            handleCloseDeleteInventoryPopup();
-                                        }}>
-                                            Confirmar
-                                        </button>
-                                        <button onClick={handleCloseDeleteInventoryPopup}>Cancelar</button>
+                                            </thead>
+                                            <tbody>
+                                                {laboratories.map((lab) => (
+                                                    <tr key={lab.laboratory_ID}>
+                                                        <td>{lab.laboratory_ID}</td>
+                                                        <td>{lab.laboratory_Num}</td>
+                                                        <td>{lab.capacity}</td>
+                                                        <td>
+                                                            <button onClick={() => handleOpenEditPopup(lab)}>Editar</button>
+                                                            <button onClick={() => handleOpenDeletePopup(lab.laboratory_ID)}>Eliminar</button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        <div className="spacing"></div> {/* Espaciador */}
                                     </div>
                                 </div>
                             )}
-                        {/* Tabla de inventario existente */}
-                        <h3>Datos Encontrados:</h3>
-                        <table className="styled-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Item</th>
-                                    <th>Cantidad Disponible</th>
-                                    <th>Laboratorio</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {inventory.map(item => (
-                                    <tr key={item.inventory_ID}>
-                                        <td>{item.inventory_ID}</td>
-                                        <td>{item.equipment ? item.equipment.equipment_Name : 'N/A'}</td>
-                                        <td>{item.available_quantity}</td>
-                                        <td>{item.laboratory ? item.laboratory.laboratory_Num : 'N/A'}</td>
-                                        <td>
-                                            {/* Botones de Editar y Eliminar */}
-                                            <button onClick={() => {
-                                                setEditingInventoryId(item.inventory_ID);
-                                                setEditingEquipmentId(item.equipment_ID); // Cargar el ID del equipo para editar
-                                                setEditingAvailableQuantity(item.available_quantity);
-                                                setEditingLaboratoryId(item.laboratory_ID);
-                                                handleOpenEditInventoryPopup();
-                                            }}>Editar</button>
-                                            <button onClick={() => { setInventoryToDelete(item.inventory_ID); handleOpenDeleteInventoryPopup(); }}>Eliminar</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+
+
+
+{/* EQUIPMENT */}
+
+
+                                    {activeTable === 'equipments' && equipments.length > 0 && (
+
+                                    <div>
+                                    {/* Gráfico circular de estado de los equipos */}
+                                    <h3>Estado de los Equipos:</h3>
+                                    <div style={{ width: '100%', height: '400px' }}>
+                                    <Pie data={EchartData} options={EchartOptions} />
+                                    </div>
+
+
+                                                <h3>Crear Equipment:</h3>
+                                                <button onClick={handleOpenCreatePopup}>CREAR</button>
+
+                                                {/* Modal de Crear */}
+                                                {showCreatePopup && (
+                                                    <div className="modal">
+                                                        <div className="modal-content">
+                                                            <span className="close" onClick={handleCloseCreatePopup}>&times;</span>
+                                                            <h3>Crear Nuevo Equipo</h3>
+                                                            <input
+                                                                type="text"
+                                                                value={equipmentName}
+                                                                onChange={(e) => setequipmentName(e.target.value)}
+                                                                placeholder="Nombre del Equipo"
+                                                            />
+                                                            <input
+                                                                type="text"
+                                                                value={description}
+                                                                onChange={(e) => setdescription(e.target.value)}
+                                                                placeholder="Descripción del Equipo"
+                                                            />
+                                                            <input
+                                                                type="number"
+                                                                value={statusE_ID}
+                                                                onChange={(e) => setstatusE_ID(Number(e.target.value))}
+                                                                placeholder="ID del Estado (inicialmente 1)"
+                                                            />
+                                                            <input
+                                                                type="date"
+                                                                value={acquisitionDate}
+                                                                onChange={(e) => setacquisitionDate(e.target.value)}
+                                                                placeholder="Fecha de Adquisición (YYYY-MM-DD)"
+                                                            />
+                                                            <input
+                                                                type="number"
+                                                                value={laboratoryID}
+                                                                onChange={(e) => setlaboratoryID(Number(e.target.value))}
+                                                                placeholder="ID del Laboratorio"
+                                                            />
+                                                            <button onClick={() => { handleCreateEquipment(equipmentName, description, statusE_ID, acquisitionDate, laboratoryID); handleCloseCreatePopup(); }}>
+                                                                CREAR
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                                                                    {/* Modal de Editar */}
+                                                        {editingEquipmentId && (
+                                                            <div className="modal">
+                                                                <div className="modal-content">
+                                                                    <span className="close" onClick={handleCloseEditEEPopup}>&times;</span>
+                                                                    <h3>Editar Equipo</h3>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editingEquipmentName}
+                                                                        onChange={(e) => setEditingEquipmentName(e.target.value)}
+                                                                        placeholder="Nombre del Equipo"
+                                                                    />
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editingDescription}
+                                                                        onChange={(e) => setEditingDescription(e.target.value)}
+                                                                        placeholder="Descripción del Equipo"
+                                                                    />
+                                                                    <input
+                                                                        type="number"
+                                                                        value={editingStatusEId}
+                                                                        onChange={(e) => setEditingStatusEId(Number(e.target.value))}
+                                                                        placeholder="ID del Estado"
+                                                                    />
+                                                                    <input
+                                                                        type="date"
+                                                                        value={editingAcquisitionDate}
+                                                                        onChange={(e) => setEditingAcquisitionDate(e.target.value)}
+                                                                        placeholder="Fecha de Adquisición"
+                                                                    />
+                                                                    <input
+                                                                        type="number"
+                                                                        value={editingLaboratoryId}
+                                                                        onChange={(e) => setEditingLaboratoryId(Number(e.target.value))}
+                                                                        placeholder="ID del Laboratorio"
+                                                                    />
+                                                                    <button onClick={handleUpdateEquipment}>Editar Equipo</button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+
+                                                {/* Modal de Confirmación para Eliminar */}
+                                                {showDeletePopup && (
+                                                    <div className="modal">
+                                                        <div className="modal-content">
+                                                            <span className="close" onClick={handleCloseDeletePopup}>&times;</span>
+                                                            <h3>¿Estás seguro de que deseas eliminar este equipo?</h3>
+                                                            <button onClick={async () => {
+                                                                await handleDeleteEquipment(equipmentToDelete); // Espera a que se complete la eliminación
+                                                                handleCloseDeletePopup(); // Cierra el popup después de eliminar
+                                                            }}>
+                                                                Confirmar
+                                                            </button>
+                                                            <button onClick={handleCloseDeletePopup}>Cancelar</button>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Tabla de equipos existentes */}
+                                                <h3>Datos Encontrados:</h3>
+
+                                                <table className="styled-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>ID</th>
+                                                            <th>Equipo</th>
+                                                            <th>Descripción</th>
+                                                            <th>Estado</th>
+                                                            <th>Laboratorio</th>
+                                                            <th>Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {equipments.map(equip => (
+                                                            <tr key={equip.equipment_ID || equip.id || equip.Equipment_ID}>
+                                                                <td>{equip.equipment_ID || equip.id || equip.Equipment_ID || 'Sin ID'}</td>
+                                                                <td>{equip.equipment_Name || 'N/A'}</td>
+                                                                <td>{equip.description || 'N/A'}</td>
+                                                                <td>{equip.status_Equipment ? equip.status_Equipment.status : 'N/A'}</td>
+                                                                <td>{equip.laboratory ? equip.laboratory.laboratory_Num || 'N/A' : 'N/A'}</td>
+                                                                <td>
+                                                                    <button onClick={() => {
+                                                                        // Cambiado el nombre de la función para abrir el popup de edición
+                                                                        handleOpenEditEquipmentPopup(equip);
+                                                                    }}>Editar</button>
+
+                                                                    <button onClick={() => {
+                                                                        setEquipmentToDelete(equip.equipment_ID || equip.id || equip.Equipment_ID);
+                                                                        handleOpenDeletePopup();
+                                                                    }}>Eliminar</button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                                <div className="spacing"></div> {/* Espaciador */}
+                                            </div>
+                                        )}
+
+
+
+   {/* INVENTORY */}
+             
+                                    {activeTable === 'inventory' && inventory.length > 0 && (
+                                        <div>
+                                                    <div>
+                                <h3>Gráfico de Inventario por Laboratorio</h3>
+                                <Bar data={IEchartData} options={IEchartOptions} />
+                            </div>
+                                            {/* Botón para crear un nuevo inventario */}
+                                            <h3>Crear Inventario:</h3>
+                                            <button onClick={handleOpenCreateInventoryPopup}>CREAR</button>
+
+                                            {/* Modal de Crear Inventario */}
+                                            {showCreateInventoryPopup && (
+                                                <div className="modal">
+                                                    <div className="modal-content">
+                                                        <span className="close" onClick={handleCloseCreateInventoryPopup}>&times;</span>
+                                                        <h3>Crear Nuevo Inventario</h3>
+                                                        <input
+                                                            type="number"
+                                                            value={equipmentID}
+                                                            onChange={(e) => setequipmentID(Number(e.target.value))}
+                                                            placeholder="ID del Equipo"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={availableQuantity}
+                                                            onChange={(e) => setavailableQuantity(Number(e.target.value))}
+                                                            placeholder="Cantidad Disponible"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={laboratoryID}
+                                                            onChange={(e) => setlaboratoryID(Number(e.target.value))}
+                                                            placeholder="ID del Laboratorio"
+                                                        />
+                                                        <button onClick={() => { handleCreateInventory(equipmentID, availableQuantity, laboratoryID); handleCloseCreateInventoryPopup(); }}>
+                                                            CREAR
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Modal de Editar Inventario */}
+                                            {editingInventoryId && (
+                                                <div className="modal">
+                                                    <div className="modal-content">
+                                                        <span className="close" onClick={handleCloseEditInventoryPopup}>&times;</span>
+                                                        <h3>Editar Inventario</h3>
+                                                        <input
+                                                            type="number"
+                                                            value={editingEquipmentId}
+                                                            onChange={(e) => setEditingEquipmentId(Number(e.target.value))}
+                                                            placeholder="ID del Equipo"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={editingAvailableQuantity}
+                                                            onChange={(e) => setEditingAvailableQuantity(Number(e.target.value))}
+                                                            placeholder="Cantidad Disponible"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={editingLaboratoryId}
+                                                            onChange={(e) => setEditingLaboratoryId(Number(e.target.value))}
+                                                            placeholder="ID del Laboratorio"
+                                                        />
+                                                        <button onClick={() => { handleUpdateInventory(); handleCloseEditInventoryPopup(); }}>
+                                                            GUARDAR CAMBIOS
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                                {/* Modal de Confirmación para Eliminar */}
+                                                {showDeleteInventoryPopup && (
+                                                    <div className="modal">
+                                                        <div className="modal-content">
+                                                            <span className="close" onClick={handleCloseDeleteInventoryPopup}>&times;</span>
+                                                            <h3>¿Estás seguro de que deseas eliminar este inventario?</h3>
+                                                            <button onClick={async () => {
+                                                                await handleDeleteEquipment(equipmentToDelete); // Asegúrate de que equipmentToDelete tenga el valor correcto
+                                                                handleCloseDeleteInventoryPopup();
+                                                            }}>
+                                                                Confirmar
+                                                            </button>
+                                                            <button onClick={handleCloseDeleteInventoryPopup}>Cancelar</button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            {/* Tabla de inventario existente */}
+                                            <h3>Datos Encontrados:</h3>
+                                            <table className="styled-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Item</th>
+                                                        <th>Cantidad Disponible</th>
+                                                        <th>Laboratorio</th>
+                                                        <th>Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {inventory.map(item => (
+                                                        <tr key={item.inventory_ID}>
+                                                            <td>{item.inventory_ID}</td>
+                                                            <td>{item.equipment ? item.equipment.equipment_Name : 'N/A'}</td>
+                                                            <td>{item.available_quantity}</td>
+                                                            <td>{item.laboratory ? item.laboratory.laboratory_Num : 'N/A'}</td>
+                                                            <td>
+                                                                {/* Botones de Editar y Eliminar */}
+                                                                <button onClick={() => {
+                                                                    setEditingInventoryId(item.inventory_ID);
+                                                                    setEditingEquipmentId(item.equipment_ID); // Cargar el ID del equipo para editar
+                                                                    setEditingAvailableQuantity(item.available_quantity);
+                                                                    setEditingLaboratoryId(item.laboratory_ID);
+                                                                    handleOpenEditInventoryPopup();
+                                                                }}>Editar</button>
+                                                                <button onClick={() => { setInventoryToDelete(item.inventory_ID); handleOpenDeleteInventoryPopup(); }}>Eliminar</button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                            <div className="spacing"></div> {/* Espaciador */}
+                                        </div>
+                                    )}
 
 {/* PERMISSION */}
                 {activeTable === 'permission' && permissions.length > 0 && (
@@ -1536,6 +2073,7 @@ const handleUpdatePermission = async () => {
                                 ))}
                             </tbody>
                         </table>
+                        <div className="spacing"></div> {/* Espaciador */}
                     </div>
                 )}
 
@@ -1603,61 +2141,61 @@ const handleUpdatePermission = async () => {
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* Modal de Editar Reserva */}
-                                        {editingReservationId && (
-                                            <div className="modal">
-                                                <div className="modal-content">
-                                                    <span className="close" onClick={handleCloseEditReservationPopup}>&times;</span>
-                                                    <h3>Editar Reserva</h3>
-                                                    <input
-                                                        type="number"
-                                                        value={editingUserId}
-                                                        onChange={(e) => setEditingUserId(Number(e.target.value))}
-                                                        placeholder="ID del Usuario"
-                                                    />
-                                                    <input
-                                                        type="number"
-                                                        value={editingLaboratoryId}
-                                                        onChange={(e) => setEditingLaboratoryId(Number(e.target.value))}
-                                                        placeholder="ID del Laboratorio"
-                                                    />
-                                                    <input
-                                                        type="number"
-                                                        value={editingReservationEquipments}
-                                                        onChange={(e) => setEditingReservationEquipments(Number(e.target.value))}
-                                                        placeholder="ID del Equipo de Reserva"
-                                                    />
-                                                    <input
-                                                        type="date"
-                                                        value={editingReservationDate}
-                                                        onChange={(e) => setEditingReservationDate(e.target.value)}
-                                                        placeholder="Fecha de Reserva (YYYY-MM-DD)"
-                                                    />
-                                                    <input
-                                                        type="time"
-                                                        value={editingStartTime}
-                                                        onChange={(e) => setEditingStartTime(e.target.value)}
-                                                        placeholder="Hora de Inicio (HH:MM:SS)"
-                                                    />
-                                                    <input
-                                                        type="time"
-                                                        value={editingEndTime}
-                                                        onChange={(e) => setEditingEndTime(e.target.value)}
-                                                        placeholder="Hora de Fin (HH:MM:SS)"
-                                                    />
-                                                    <input
-                                                        type="number"
-                                                        value={editingStatusRId}
-                                                        onChange={(e) => setEditingStatusRId(Number(e.target.value))}
-                                                        placeholder="ID del Estado de Reserva"
-                                                    />
-                                                    <button onClick={() => { handleUpdateReservation(); handleCloseEditReservationPopup(); }}>
-                                                        GUARDAR CAMBIOS
-                                                    </button>
+                                            {/* Modal de Editar Reserva */}
+                                            {editingReservationId && (
+                                                <div className="modal">
+                                                    <div className="modal-content">
+                                                        <span className="close" onClick={handleCloseEditReservationPopup}>&times;</span>
+                                                        <h3>Editar Reserva</h3>
+                                                        <input
+                                                            type="number"
+                                                            value={editingUserId}
+                                                            onChange={(e) => setEditingUserId(Number(e.target.value))}
+                                                            placeholder="ID del Usuario"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={editingLaboratoryId}
+                                                            onChange={(e) => setEditingLaboratoryId(Number(e.target.value))}
+                                                            placeholder="ID del Laboratorio"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={editingReservationEquipments}
+                                                            onChange={(e) => setEditingReservationEquipments(Number(e.target.value))}
+                                                            placeholder="ID del Equipo de Reserva"
+                                                        />
+                                                        <input
+                                                            type="date"
+                                                            value={editingReservationDate}
+                                                            onChange={(e) => setEditingReservationDate(e.target.value)}
+                                                            placeholder="Fecha de Reserva (YYYY-MM-DD)"
+                                                        />
+                                                        <input
+                                                            type="time"
+                                                            value={editingStartTime}
+                                                            onChange={(e) => setEditingStartTime(e.target.value)}
+                                                            placeholder="Hora de Inicio (HH:MM:SS)"
+                                                        />
+                                                        <input
+                                                            type="time"
+                                                            value={editingEndTime}
+                                                            onChange={(e) => setEditingEndTime(e.target.value)}
+                                                            placeholder="Hora de Fin (HH:MM:SS)"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={editingStatusRId}
+                                                            onChange={(e) => setEditingStatusRId(Number(e.target.value))}
+                                                            placeholder="ID del Estado de Reserva"
+                                                        />
+                                                        <button onClick={() => { handleUpdateReservation(); handleCloseEditReservationPopup(); }}>
+                                                            GUARDAR CAMBIOS
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+
 
                                         {/* Modal de Confirmación para Eliminar */}
                                         {showDeleteReservationPopup && (
@@ -1740,7 +2278,7 @@ const handleUpdatePermission = async () => {
                                                 ))}
                                             </tbody>
                                         </table>
-
+                                        <div className="spacing"></div> {/* Espaciador */}
                                     </div>
                                 )}
 
@@ -1812,7 +2350,7 @@ const handleUpdatePermission = async () => {
                                             </div>
                                         )}
 
-                                        {/* Modal de Editar Reserva */}
+                                      {/* Modal de Editar Reserva de Equipo */}
                                         {editingReservationEquipmentId && (
                                             <div className="modal">
                                                 <div className="modal-content">
@@ -1831,20 +2369,21 @@ const handleUpdatePermission = async () => {
                                                         placeholder="Cantidad"
                                                     />
                                                     <input
-                                                        type="number"
+                                                        type="date"
                                                         value={editingReservationDate}
                                                         onChange={(e) => setEditingReservationDate(e.target.value)}
                                                         placeholder="Fecha de Reserva"
                                                     />
                                                     <button onClick={() => {
                                                         handleUpdateReservationEquipment(); // Actualizar la reserva
-                                                        handleCloseEditReservationEquipmentPopup();
+                                                        handleCloseEditReservationEquipmentPopup(); // Cerrar el modal
                                                     }}>
                                                         GUARDAR CAMBIOS
                                                     </button>
                                                 </div>
                                             </div>
                                         )}
+
 
                                         {/* Modal de Confirmación para Eliminar */}
                                         {showDeleteReservationPopup && (
@@ -1903,6 +2442,7 @@ const handleUpdatePermission = async () => {
                                                 ))}
                                             </tbody>
                                         </table>
+                                        <div className="spacing"></div> {/* Espaciador */}
                                     </div>
                                 )}
 
@@ -1935,28 +2475,27 @@ const handleUpdatePermission = async () => {
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* Modal de Editar Estado de Equipo */}
-                                        {editingStatusId && (
-                                            <div className="modal">
-                                                <div className="modal-content">
-                                                    <span className="close" onClick={handleCloseEditStatusPopup}>&times;</span>
-                                                    <h3>Editar Estado de Equipo</h3>
-                                                    <input
-                                                        type="text"
-                                                        value={editingStatus}
-                                                        onChange={(e) => setEditingStatus(e.target.value)}
-                                                        placeholder="Estado de Reserva"
-                                                    />
-                                                    <button onClick={() => { 
-                                                        handleUpdateStatusEquipment(editingStatusId, editingStatus); 
-                                                        handleCloseEditStatusPopup(); 
-                                                    }}>
-                                                        GUARDAR CAMBIOS
-                                                    </button>
+                                            {/* Modal de Editar Estado de Equipo */}
+                                            {editingStatusId && (
+                                                <div className="modal">
+                                                    <div className="modal-content">
+                                                        <span className="close" onClick={handleCloseEditStatusPopup}>&times;</span>
+                                                        <h3>Editar Estado de Equipo</h3>
+                                                        <input
+                                                            type="text"
+                                                            value={editingStatus}
+                                                            onChange={(e) => setEditingStatus(e.target.value)}
+                                                            placeholder="Estado de Reserva"
+                                                        />
+                                                        <button onClick={() => { 
+                                                            handleUpdateStatusEquipment(editingStatusId, editingStatus); 
+                                                            handleCloseEditStatusPopup(); 
+                                                        }}>
+                                                            GUARDAR CAMBIOS
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
 
                                         {/* Modal de Confirmación para Eliminar Estado de Equipo */}
                                         {showDeleteStatusPopup && (
@@ -2012,6 +2551,7 @@ const handleUpdatePermission = async () => {
                                                 ))}
                                             </tbody>
                                         </table>
+                                        <div className="spacing"></div> {/* Espaciador */}
                                     </div>
                                 )}
 
@@ -2079,6 +2619,7 @@ const handleUpdatePermission = async () => {
                                                 ))}
                                             </tbody>
                                         </table>
+                                        <div className="spacing"></div> {/* Espaciador */}
                                     </div>
                                 )}
 
@@ -2184,7 +2725,7 @@ const handleUpdatePermission = async () => {
                                                 ))}
                                             </tbody>
                                         </table>
-
+                                        <div className="spacing"></div> {/* Espaciador */}
                                         {/* Modal de Confirmación para Eliminar Usuario */}
                                         {showDeleteUserPopup && (
                                             <div className="modal">
@@ -2266,28 +2807,43 @@ const handleUpdatePermission = async () => {
 
  {/* USER PERMISSION*/} 
 
-                        {activeTable === 'userPermission' && userPermissions.length > 0 && (
-                            <>
+                            {activeTable === 'userPermission' && userPermissions.length > 0 && (
                                 <div>
+                                    {/* Botón para crear un nuevo permiso de usuario */}
                                     <h3>Crear Permiso de Usuario:</h3>
-                                    <input
-                                        type="number"
-                                        value={userId}
-                                        onChange={(e) => setuserId(Number(e.target.value))}
-                                        placeholder="ID del Usuario"
-                                    />
-                                    <input
-                                        type="number"
-                                        value={permissionId}
-                                        onChange={(e) => setpermissionId(Number(e.target.value))}
-                                        placeholder="ID del Permiso"
-                                    />
-                                    <button onClick={() => handleCreateUserPermission(userId, permissionId)}>
-                                        CREAR
-                                    </button>
-                                </div>
+                                    <button onClick={handleOpenCreateUserPermissionPopup}>CREAR</button>
 
-                                <div>
+                                    {/* Modal de Crear Permiso de Usuario */}
+                                    {showCreateUserPermissionPopup && (
+                                        <div className="modal">
+                                            <div className="modal-content">
+                                                <span className="close" onClick={handleCloseCreateUserPermissionPopup}>&times;</span>
+                                                <h3>Crear Nuevo Permiso de Usuario</h3>
+                                                <input
+                                                    type="number"
+                                                    value={userId}
+                                                    onChange={(e) => setuserId(Number(e.target.value))}
+                                                    placeholder="ID del Usuario"
+                                                    required
+                                                />
+                                                <input
+                                                    type="number"
+                                                    value={permissionId}
+                                                    onChange={(e) => setpermissionId(Number(e.target.value))}
+                                                    placeholder="ID del Permiso"
+                                                    required
+                                                />
+                                                <button onClick={() => {
+                                                    handleCreateUserPermission(userId, permissionId);
+                                                    handleCloseCreateUserPermissionPopup();
+                                                }}>
+                                                    CREAR
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Tabla de permisos de usuario existentes */}
                                     <h3>Datos Encontrados:</h3>
                                     <table className="styled-table">
                                         <thead>
@@ -2305,22 +2861,84 @@ const handleUpdatePermission = async () => {
                                                     <td>{userPerm.user_Type ? userPerm.user_Type.userType : 'N/A'}</td>
                                                     <td>{userPerm.permission ? userPerm.permission.permissionName : 'N/A'}</td>
                                                     <td>
-                                                                {/* Botones de Editar y Eliminar */}
-                                                                <button onClick={() => handleDeleteUserPermission(userPerm.userP_ID)}>Eliminar</button>
+                                                        {/* Botón de Editar */}
+                                                        <button onClick={() => {
+                                                            setEditingUserPermissionId(userPerm.userP_ID);
+                                                            setuserId(userPerm.userId || '');
+                                                            setpermissionId(userPerm.permissionId || '');
+                                                            handleOpenEditUserPermissionPopup();
+                                                        }}>Editar</button>
 
-                                                            </td>
-                                                    
+                                                        {/* Botón de Eliminar con Modal de Confirmación */}
+                                                        <button onClick={() => handleOpenDeleteUserPermissionPopup(userPerm.userP_ID)}>Eliminar</button>
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
+                                    <div className="spacing"></div> {/* Espaciador */}
+
+                                    {/* Modal de Confirmación para Eliminar Permiso de Usuario */}
+                                    {showDeleteUserPermissionPopup && (
+                                        <div className="modal">
+                                            <div className="modal-content">
+                                                <span className="close" onClick={handleCloseDeleteUserPermissionPopup}>&times;</span>
+                                                <h3>¿Estás seguro de que deseas eliminar este permiso de usuario?</h3>
+                                                <button onClick={() => {
+                                                    handleDeleteUserPermission(userPermissionIdToDelete);
+                                                    handleCloseDeleteUserPermissionPopup();
+                                                }}>
+                                                    Confirmar
+                                                </button>
+                                                <button onClick={handleCloseDeleteUserPermissionPopup}>Cancelar</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Modal de Editar Permiso de Usuario */}
+                                    {editingUserPermissionId && (
+                                        <div className="modal">
+                                            <div className="modal-content">
+                                                <span className="close" onClick={() => {
+                                                    handleCloseEditUserPermissionPopup();
+                                                    setEditingUserPermissionId(null);
+                                                }}>&times;</span>
+                                                <h3>Editar Permiso de Usuario</h3>
+                                                <input
+                                                    type="number"
+                                                    value={userId}
+                                                    onChange={(e) => setuserId(Number(e.target.value))}
+                                                    placeholder="ID del Usuario"
+                                                    required
+                                                />
+                                                <input
+                                                    type="number"
+                                                    value={permissionId}
+                                                    onChange={(e) => setpermissionId(Number(e.target.value))}
+                                                    placeholder="ID del Permiso"
+                                                    required
+                                                />
+                                                <button onClick={() => {
+                                                    if (editingUserPermissionId) {
+                                                        handleUpdateUserPermission(editingUserPermissionId, userId, permissionId);
+                                                        handleCloseEditUserPermissionPopup();
+                                                        setEditingUserPermissionId(null);
+                                                    }
+                                                }}>
+                                                    GUARDAR CAMBIOS
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="spacing"></div> {/* Espaciador */}
                                 </div>
-                            </>
-                        )}
-                        <div className="spacing"></div> {/* Espaciador */}
+                            )}
+
+
  {/* USER TYPE*/} 
 
-                        {activeTable === 'userType' && userTypes.length > 0 && (
+                            {activeTable === 'userType' && userTypes.length > 0 && (
                                 <>
                                     <h3>Crear Tipo de Usuario:</h3>
                                     <input
@@ -2335,36 +2953,93 @@ const handleUpdatePermission = async () => {
 
                                     <h3>Datos Encontrados:</h3>
                                     <table className="styled-table">
-                                        
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
                                                 <th>Tipo de Usuario</th>
-                                                <th>Eliminado</th> {/* Añadido para mostrar el estado de eliminación */}
+                                                <th>Eliminado</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {userTypes.map(userType => (
-                                                <tr key={userType.user_Type_ID}> {/* Cambiado a 'user_Type_ID' */}
-                                                    <td>{userType.user_Type_ID}</td> {/* Cambiado a 'user_Type_ID' */}
-                                                    <td>{userType.userType || 'N/A'}</td> {/* Cambiado a 'userType' */}
-                                                    <td>{userType.isDeleted ? 'Sí' : 'No'}</td> {/* Añadido para mostrar si está eliminado */}
+                                                <tr key={userType.user_Type_ID}>
+                                                    <td>{userType.user_Type_ID}</td>
+                                                    <td>{userType.userType || 'N/A'}</td>
+                                                    <td>{userType.isDeleted ? 'Sí' : 'No'}</td>
                                                     <td>
-                                                                {/* Botones de Editar y Eliminar */}
-                                                                <button onClick={() => handleDeleteUserType(userType.user_Type_ID)}>Eliminar</button>
+                                                        {/* Botón de Editar */}
+                                                        <button onClick={() => {
+                                                            setEditingUserTypeId(userType.user_Type_ID);
+                                                            setUserType(userType.userType || '');
+                                                            handleOpenEditUserTypePopup();
+                                                        }}>Editar</button>
 
-                                                            </td>
-                                                   
+                                                        {/* Botón de Eliminar con Modal de Confirmación */}
+                                                        <button onClick={() => handleOpenDeleteUserTypePopup(userType.user_Type_ID)}>Eliminar</button>
+                                                    </td>
                                                 </tr>
-                                                
                                             ))}
-                                            <div className="spacing"></div> {/* Espaciador */}
                                         </tbody>
                                     </table>
+                                    <div className="spacing"></div>
+
+                                    {/* Modal de Confirmación para Eliminar Tipo de Usuario */}
+                                    {showDeleteUserTypePopup && (
+                                        <div className="modal">
+                                            <div className="modal-content">
+                                                <span className="close" onClick={handleCloseDeleteUserTypePopup}>&times;</span>
+                                                <h3>¿Estás seguro de que deseas eliminar este tipo de usuario?</h3>
+                                                <button onClick={() => {
+                                                    handleDeleteUserType(userTypeIdToDelete);
+                                                    handleCloseDeleteUserTypePopup();
+                                                }}>
+                                                    Confirmar
+                                                </button>
+                                                <button onClick={handleCloseDeleteUserTypePopup}>Cancelar</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Modal de Editar Tipo de Usuario */}
+                                    {editingUserTypeId && (
+                                        <div className="modal">
+                                            <div className="modal-content">
+                                                <span className="close" onClick={() => {
+                                                    handleCloseEditUserTypePopup();
+                                                    setEditingUserTypeId(null);
+                                                }}>&times;</span>
+                                                <h3>Editar Tipo de Usuario</h3>
+                                                <input
+                                                    type="text"
+                                                    value={userType}
+                                                    onChange={(e) => setUserType(e.target.value)}
+                                                    placeholder="Nombre del Tipo de Usuario"
+                                                    required
+                                                />
+                                                <button onClick={() => {
+                                                    if (editingUserTypeId) {
+                                                        handleUpdateUserType(editingUserTypeId, userType);
+                                                        handleCloseEditUserTypePopup();
+                                                        setEditingUserTypeId(null);
+                                                    }
+                                                }}>
+                                                    GUARDAR CAMBIOS
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="spacing"></div>
                                 </>
-                                
                             )}
+
+
+
+
+
+
+
                          {/*AQUI TERMINA EL CODIGO REVISAR QUE NO ESTÉ EL ERROR*/} 
                         </>
 
