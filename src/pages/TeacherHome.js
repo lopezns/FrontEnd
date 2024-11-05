@@ -1,10 +1,18 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
 import './TeacherHome.css'; // Asegúrate de que este archivo contenga los estilos correctos
 import logoP from '../assets/LOGOPROJECT.png'; // Asegúrate de usar la ruta correcta
 
+
+import { Pie } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import TeacherDashboard from './TeacherDashboard';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 const TeacherHome = () => {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [activeTable, setActiveTable] = useState(null); // Solo una tabla activa
@@ -24,6 +32,9 @@ const handleOpenEditPopup = (lab) => {
     setShowEditPopup(true);                           // Muestra el modal de edición
 };
 
+
+    const [loading, setLoading] = useState(true);
+    const [showPopup, setShowPopup] = useState(false); // Estado para controlar el popup
 
 
 //ACA ESTA
@@ -60,6 +71,14 @@ const handleCloseEditStatusReservationPopup = () => {
     setEditingStatusReservation('');
 };
 
+const handleOpenPopup = () => {
+    setShowPopup(true); // Cambia el estado para mostrar el popup
+};
+
+// Función para cerrar el popup
+const handleClosePopup = () => {
+    setShowPopup(false); // Cambia el estado para ocultar el popup
+};
 
 const [equipmentToDelete, setEquipmentToDelete] = useState(null); // Añadir esto
 
@@ -1023,6 +1042,141 @@ const handleUpdatePermission = async () => {
             };
 //AQUI TERMINA EL DELETE
 
+//AQUI COMIENZA LAS GRAFICAS
+
+                // Configuración de datos para el gráfico de barras
+                const chartData = {
+                    labels: laboratories.map((lab) => `Laboratorio ${lab.laboratory_Num}`),
+                    datasets: [
+                        {
+                            label: 'Capacidad de cada laboratorio',
+                            data: laboratories.map((lab) => lab.capacity),
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                        },
+                    ],
+                };
+
+                const chartOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Laboratorios',
+                            },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Capacidad',
+                            },
+                        },
+                    },
+                };
+
+//2DO
+
+                const equipmentStatusCount = equipments.reduce((acc, equip) => {
+                    const status = equip.status_Equipment ? equip.status_Equipment.status : 'N/A';
+                    acc[status] = (acc[status] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const EchartData = {
+                    labels: Object.keys(equipmentStatusCount),
+                    datasets: [
+                        {
+                            data: Object.values(equipmentStatusCount),
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                            ],
+                            borderColor: 'rgba(255, 255, 255, 1)',
+                            borderWidth: 1,
+                        },
+                    ],
+                };
+
+                const EchartOptions = {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    },
+                };
+//3RO
+
+
+
+                const inventoryCountByLab = inventory.reduce((acc, item) => {
+                    const labId = item.laboratory ? item.laboratory.laboratory_Num : 'N/A';
+                    acc[labId] = acc[labId] || {};
+                    const itemName = item.equipment ? item.equipment.equipment_Name : 'N/A';
+                    acc[labId][itemName] = (acc[labId][itemName] || 0) + item.available_quantity;
+                    return acc;
+                }, {});
+
+                // Preparar los datos para el gráfico
+                const labels = Object.keys(inventoryCountByLab[Object.keys(inventoryCountByLab)[0]] || {}); // Nombres de los items
+
+                // Crear un conjunto de datos para cada laboratorio
+                const datasets = [];
+                const colors = [
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)',
+                    'rgba(201, 203, 207, 0.6)',
+                    'rgba(255, 20, 147, 0.6)',
+                    'rgba(255, 215, 0, 0.6)',
+                    'rgba(0, 255, 127, 0.6)',
+                    'rgba(75, 0, 130, 0.6)',
+                ];
+
+                let colorIndex = 0; // Índice para los colores
+
+                // Crear un conjunto de datos para cada laboratorio
+                for (const lab in inventoryCountByLab) {
+                    const items = inventoryCountByLab[lab];
+                    const itemData = Object.keys(items).map(itemName => items[itemName]); // Obtener las cantidades como un arreglo
+
+                    datasets.push({
+                        label: lab, // Etiqueta del laboratorio
+                        data: itemData, // Cantidad de items
+                        backgroundColor: itemData.map(() => colors[colorIndex++ % colors.length]), // Asignar un color único a cada barra
+                        borderColor: 'rgba(255, 255, 255, 1)', // Color del borde
+                        borderWidth: 1,
+                    });
+                }
+
+                const IEchartData = {
+                    labels: labels, // Nombres de los items
+                    datasets: datasets,
+                };
+
+                const IEchartOptions = {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    },
+                };
+
+
+//ACÁ TERMINAN LAS GRAFICAS
+
+
     return (
         <div className={`admin-home ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
 <header className="header">
@@ -1030,13 +1184,13 @@ const handleUpdatePermission = async () => {
     <h1>Sistema de Gestión de Recursos y Aulas de Laboratorio</h1>
     <div className="header-buttons">
         <button onClick={handleLogout}>Cerrar Sesión</button>
-        <button onClick={() => window.location.href = '/Unity'}>Simulador Unity</button>
+        <button onClick={() => navigate('/Unity')}>Simulador Unity</button>
     </div>
 </header>
 
             <div className="main-container">
                 <div className="table-buttons-left">
-                    {['laboratory', 'equipments', 'inventory', 'reservation','reservationequipment', 'statusequipment','statusreservation', 'user'].map((table) => (
+                    {['Dashboards', 'laboratory', 'equipments', 'inventory', 'reservation','reservationequipment', 'statusequipment','statusreservation', 'user'].map((table) => (
                         <button key={table} onClick={() => handleTableClick(table)}>
                             {table.charAt(0).toUpperCase() + table.slice(1)} <span>{activeTable === table ? '▲' : '▼'}</span>
                         </button>
@@ -1050,113 +1204,177 @@ const handleUpdatePermission = async () => {
 
 
 
-{/* LABORATORY */}
-                                    {activeTable === 'laboratory' && laboratories.length > 0 && (
-                            <div>
-                                <h3>Crear Laboratorio:</h3>
-                                <button onClick={handleOpenCreatePopup}>CREAR</button>
+{/* DASHBOARDS */}
 
-                                {/* Modal de Crear */}
-                                {showCreatePopup && (
-                                    <div className="modal">
-                                        <div className="modal-content">
-                                            <span className="close" onClick={handleCloseCreatePopup}>&times;</span>
-                                            <h3>Crear Nuevo Laboratorio</h3>
-                                            <input
-                                                type="number"
-                                                value={laboratoryNum}
-                                                onChange={(e) => setLaboratoryNum(Number(e.target.value))}
-                                                placeholder="Número de Laboratorio"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={capacity}
-                                                onChange={(e) => setCapacity(Number(e.target.value))}
-                                                placeholder="Capacidad"
-                                            />
-                                            <button onClick={() => { handleCreateLaboratory(); handleCloseCreatePopup(); }}>
-                                                CREAR
-                                            </button>
+{activeTable === 'Dashboards' && (
+                                            <div>
+                                            <div>
+                                            <TeacherDashboard users={users} />
+                                                                                          
+
+                                            </div>                                    
+
+                                            
+                                            <button onClick={handleOpenPopup}>Explicación del Rol Profesor</button>
+                                
+                                            {showPopup && (
+                                                <div className="popup">
+                                                    <div className="popup-content">
+                                                        <h2>Explicación del Sistema de Gestión</h2>
+                                                        <div className="popup-text">
+                                                            
+
+                                                            <h4>Estructura y Roles del Sistema</h4>
+                                                            <h5>Rol de Profesor</h5>
+                                                            <p>
+                                                            En el sistema de gestión, los profesores cuentan con diversas herramientas que les permiten llevar
+                                                            a cabo una supervisión y administración efectiva de los recursos educativos. En primer lugar, pueden
+                                                            consultar la comparación de puntajes actuales, lo que les permite evaluar el rendimiento de los 
+                                                            estudiantes. Además, tienen acceso a la información sobre la cantidad total de estudiantes, lo que
+                                                            facilita la planificación y organización de sus actividades. Los profesores también pueden gestiona
+                                                                laboratorios, ya que tienen la capacidad de crear, editar y eliminar tanto laboratorios como equipos
+                                                                de laboratorio. Asimismo, pueden manejar el inventario del laboratorio, lo que incluye la creación,
+                                                                edición y eliminación de ítems. En términos de reservas, los profesores pueden revisar las solicitudes
+                                                                de los estudiantes, obteniendo detalles sobre las reservas de equipos, incluyendo descripciones,
+                                                                cantidades y fechas de adquisición. También pueden acceder al estado del equipo y a las reservas,
+                                                                    lo que les permite identificar rápidamente el estado de cada elemento. Finalmente, una de las 
+                                                                    funciones más cruciales es la posibilidad de visualizar todos los estudiantes registrados en el
+                                                                    sistema, donde pueden ver su ID, nombre, apellido y correo electrónico, así como la opción de 
+                                                                    editar o eliminar esta información. Es importante señalar que los nuevos estudiantes solo pueden 
+                                                                    ser creados a través del proceso de registro, garantizando así la integridad y seguridad del sistema.
+                                                            </p>
+                                                            
+                                                        </div>
+                                                        <button onClick={handleClosePopup}>Cerrar</button>
+                                                    </div>
+                                                    <div className="popup-overlay" onClick={handleClosePopup}></div>
+                                                </div>
+                                            )}
+
+                                                      <div className="spacing"></div> {/* Espaciador */}
                                         </div>
-                                    </div>
-                                )}
-                                {/* Modal de Editar */}
-                                {showEditPopup && (
-                                    <div className="modal">
-                                        <div className="modal-content">
-                                            <span className="close" onClick={handleCloseEditPopup}>&times;</span>
-                                            <h3>Editar Laboratorio</h3>
-                                            <input
-                                                type="number"
-                                                value={editingLaboratoryNum}
-                                                onChange={(e) => setEditingLaboratoryNum(Number(e.target.value))}
-                                                placeholder="Número de Laboratorio"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={editingCapacity}
-                                                onChange={(e) => setEditingCapacity(Number(e.target.value))}
-                                                placeholder="Capacidad"
-                                            />
-                                            <button onClick={() => { handleUpdateLaboratory(); handleCloseEditPopup(); }}>
-                                                Guardar Cambios
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-
-                                {/* Modal de Confirmación para Eliminar */}
-                                {showDeletePopup && (
-                                    <div className="modal">
-                                        <div className="modal-content">
-                                            <span className="close" onClick={handleCloseDeletePopup}>&times;</span>
-                                            <h3>¿Estás seguro de que deseas eliminar este laboratorio?</h3>
-                                            <button onClick={() => { handleDeleteLaboratory(laboratoryToDelete); handleCloseDeletePopup(); }}>
-                                                Confirmar
-                                            </button>
-                                            <button onClick={handleCloseDeletePopup}>Cancelar</button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="data-list">
-                                    <h3>Datos Encontrados:</h3>
-                                    <table className="styled-table">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Laboratorio</th>
-                                                <th>Capacidad</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        {laboratories.map((lab) => (
-                                            <tr key={lab.laboratoryID}>
-                                                <td>{lab.laboratory_ID}</td>
-                                                <td>{lab.laboratory_Num}</td>
-                                                <td>{lab.capacity}</td>
-                                                <td>
-                                                <button onClick={() => handleOpenEditPopup(lab)}>
-                                                                Editar
-                                                            </button>
-
-                                                    <button onClick={() => handleOpenDeletePopup(lab.laboratory_ID)}>Eliminar</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-
-                                    </table>
-                                </div>
-                            </div>
+                                        
+                                
                         )}
+
+{/* LABORATORY */}
+{activeTable === 'laboratory' && laboratories.length > 0 && (
+                                    <div>
+                                        {/* Dashboard con gráfico */}
+                                        <div style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
+                                            <h4>Capacidad en cada Laboratorio</h4>
+                                            <Bar data={chartData} options={chartOptions} />
+                                        </div>
+                                        <div className="spacing"></div> {/* Espaciador */}
+                                        <h3>Crear Laboratorio:</h3>
+                                        <button onClick={handleOpenCreatePopup}>CREAR</button>
+
+                                        {/* Modal de Crear */}
+                                        {showCreatePopup && (
+                                            <div className="modal">
+                                                <div className="modal-content">
+                                                    <span className="close" onClick={handleCloseCreatePopup}>&times;</span>
+                                                    <h3>Crear Nuevo Laboratorio</h3>
+                                                    <input
+                                                        type="number"
+                                                        value={laboratoryNum}
+                                                        onChange={(e) => setLaboratoryNum(Number(e.target.value))}
+                                                        placeholder="Número de Laboratorio"
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        value={capacity}
+                                                        onChange={(e) => setCapacity(Number(e.target.value))}
+                                                        placeholder="Capacidad"
+                                                    />
+                                                    <button onClick={() => { handleCreateLaboratory(); handleCloseCreatePopup(); }}>
+                                                        CREAR
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Modal de Editar */}
+                                        {showEditPopup && (
+                                            <div className="modal">
+                                                <div className="modal-content">
+                                                    <span className="close" onClick={handleCloseEditPopup}>&times;</span>
+                                                    <h3>Editar Laboratorio</h3>
+                                                    <input
+                                                        type="number"
+                                                        value={editingLaboratoryNum}
+                                                        onChange={(e) => setEditingLaboratoryNum(Number(e.target.value))}
+                                                        placeholder="Número de Laboratorio"
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        value={editingCapacity}
+                                                        onChange={(e) => setEditingCapacity(Number(e.target.value))}
+                                                        placeholder="Capacidad"
+                                                    />
+                                                    <button onClick={() => { handleUpdateLaboratory(); handleCloseEditPopup(); }}>
+                                                        Guardar Cambios
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Modal de Confirmación para Eliminar */}
+                                        {showDeletePopup && (
+                                            <div className="modal">
+                                                <div className="modal-content">
+                                                    <span className="close" onClick={handleCloseDeletePopup}>&times;</span>
+                                                    <h3>¿Estás seguro de que deseas eliminar este laboratorio?</h3>
+                                                    <button onClick={() => { handleDeleteLaboratory(laboratoryToDelete); handleCloseDeletePopup(); }}>
+                                                        Confirmar
+                                                    </button>
+                                                    <button onClick={handleCloseDeletePopup}>Cancelar</button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="data-list">
+                                            <h3>Datos Encontrados:</h3>
+                                            <table className="styled-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Laboratorio</th>
+                                                        <th>Capacidad</th>
+                                                        <th>Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {laboratories.map((lab) => (
+                                                        <tr key={lab.laboratoryID}>
+                                                            <td>{lab.laboratory_ID}</td>
+                                                            <td>{lab.laboratory_Num}</td>
+                                                            <td>{lab.capacity}</td>
+                                                            <td>
+                                                                <button onClick={() => handleOpenEditPopup(lab)}>Editar</button>
+                                                                <button onClick={() => handleOpenDeletePopup(lab.laboratory_ID)}>Eliminar</button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                            <div className="spacing"></div> {/* Espaciador */}
+                                        </div>
+                                    </div>
+                                )}
 
 
 {/* EQUIPMENT */}
                             {activeTable === 'equipments' && equipments.length > 0 && (
-                                <div>
+
+                        <div>
+                    {/* Gráfico circular de estado de los equipos */}
+                    <h3>Estado de los Equipos:</h3>
+                    <div style={{ width: '100%', height: '400px' }}>
+                        <Pie data={EchartData} options={EchartOptions} />
+                    </div>
+
+
                                     <h3>Crear Equipment:</h3>
                                     <button onClick={handleOpenCreatePopup}>CREAR</button>
 
@@ -1298,6 +1516,7 @@ const handleUpdatePermission = async () => {
                                             ))}
                                         </tbody>
                                     </table>
+                                    <div className="spacing"></div> {/* Espaciador */}
                                 </div>
                             )}
 
@@ -1305,6 +1524,10 @@ const handleUpdatePermission = async () => {
    {/* INVENTORY */}
                 {activeTable === 'inventory' && inventory.length > 0 && (
                     <div>
+                                <div>
+            <h3>Gráfico de Inventario por Laboratorio</h3>
+            <Bar data={IEchartData} options={IEchartOptions} />
+        </div>
                         {/* Botón para crear un nuevo inventario */}
                         <h3>Crear Inventario:</h3>
                         <button onClick={handleOpenCreateInventoryPopup}>CREAR</button>
@@ -1421,9 +1644,9 @@ const handleUpdatePermission = async () => {
                                 ))}
                             </tbody>
                         </table>
+                        <div className="spacing"></div> {/* Espaciador */}
                     </div>
                 )}
-
 {/* PERMISSION */}
         
 
