@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import axios from 'axios';
-import './StudentHome.css'; 
-import logoP from '../assets/LOGOPROJECT.png'; 
+import './StudentHome.css'; // Asegúrate de que este archivo contenga los estilos correctos
+import logoP from '../assets/LOGOPROJECT.png'; // Asegúrate de usar la ruta correcta
+
+import { Pie } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import TeacherDashboard from './TeacherDashboard';
+
 
 const StudentHome = () => {
     const [isDarkMode, setIsDarkMode] = useState(false);
@@ -59,6 +67,24 @@ const handleCloseEditStatusReservationPopup = () => {
     setEditingStatusReservation('');
 };
 
+const [showStudentPopup, setShowStudentPopup] = useState(false);
+    const [showLabPopup, setShowLabPopup] = useState(false);
+
+    const handleOpenStudentPopup = () => {
+        setShowStudentPopup(true);
+        setShowLabPopup(false); // Cierra el otro popup si está abierto
+    };
+
+    const handleOpenLabPopup = () => {
+        setShowLabPopup(true);
+        setShowStudentPopup(false); // Cierra el otro popup si está abierto
+    };
+
+    const handleClosePopupE = () => {
+        setShowStudentPopup(false);
+        setShowLabPopup(false);
+    };
+
 
 const [equipmentToDelete, setEquipmentToDelete] = useState(null); // Añadir esto
 
@@ -102,9 +128,19 @@ const [showCreateUserPopup, setShowCreateUserPopup] = useState(false);
 const [showEditUserPopup, setShowEditUserPopup] = useState(false);
 
 
+const [loading, setLoading] = useState(true);
+const [showPopup, setShowPopup] = useState(false); // Estado para controlar el popup
+const [showPopupE, setShowPopupE] = useState(false); // Estado para controlar el popup
 
+// Función para abrir el popup
+const handleOpenPopup = () => {
+    setShowPopup(true); // Cambia el estado para mostrar el popup
+};
 
-
+// Función para cerrar el popup
+const handleClosePopup = () => {
+    setShowPopup(false); // Cambia el estado para ocultar el popup
+};
 
 const handleCloseDeleteUserPopup = () => setShowDeleteUserPopup(false);
 const handleCloseEditUserPopup = () => setShowEditUserPopup(false);
@@ -994,38 +1030,237 @@ const handleUpdatePermission = async () => {
                 }
             };
 //AQUI TERMINA EL DELETE
+//AQUI COMIENZA LAS GRAFICAS
+
+                // Configuración de datos para el gráfico de barras
+                const chartData = {
+                    labels: laboratories.map((lab) => `Laboratorio ${lab.laboratory_Num}`),
+                    datasets: [
+                        {
+                            label: 'Capacidad de cada laboratorio',
+                            data: laboratories.map((lab) => lab.capacity),
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                        },
+                    ],
+                };
+
+                const chartOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Laboratorios',
+                            },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Capacidad',
+                            },
+                        },
+                    },
+                };
+
+//2DO
+
+                const equipmentStatusCount = equipments.reduce((acc, equip) => {
+                    const status = equip.status_Equipment ? equip.status_Equipment.status : 'N/A';
+                    acc[status] = (acc[status] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const EchartData = {
+                    labels: Object.keys(equipmentStatusCount),
+                    datasets: [
+                        {
+                            data: Object.values(equipmentStatusCount),
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                            ],
+                            borderColor: 'rgba(255, 255, 255, 1)',
+                            borderWidth: 1,
+                        },
+                    ],
+                };
+
+                const EchartOptions = {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    },
+                };
+//3RO
+
+
+
+                const inventoryCountByLab = inventory.reduce((acc, item) => {
+                    const labId = item.laboratory ? item.laboratory.laboratory_Num : 'N/A';
+                    acc[labId] = acc[labId] || {};
+                    const itemName = item.equipment ? item.equipment.equipment_Name : 'N/A';
+                    acc[labId][itemName] = (acc[labId][itemName] || 0) + item.available_quantity;
+                    return acc;
+                }, {});
+
+                // Preparar los datos para el gráfico
+                const labels = Object.keys(inventoryCountByLab[Object.keys(inventoryCountByLab)[0]] || {}); // Nombres de los items
+
+                // Crear un conjunto de datos para cada laboratorio
+                const datasets = [];
+                const colors = [
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)',
+                    'rgba(201, 203, 207, 0.6)',
+                    'rgba(255, 20, 147, 0.6)',
+                    'rgba(255, 215, 0, 0.6)',
+                    'rgba(0, 255, 127, 0.6)',
+                    'rgba(75, 0, 130, 0.6)',
+                ];
+
+                let colorIndex = 0; // Índice para los colores
+
+                // Crear un conjunto de datos para cada laboratorio
+                for (const lab in inventoryCountByLab) {
+                    const items = inventoryCountByLab[lab];
+                    const itemData = Object.keys(items).map(itemName => items[itemName]); // Obtener las cantidades como un arreglo
+
+                    datasets.push({
+                        label: lab, // Etiqueta del laboratorio
+                        data: itemData, // Cantidad de items
+                        backgroundColor: itemData.map(() => colors[colorIndex++ % colors.length]), // Asignar un color único a cada barra
+                        borderColor: 'rgba(255, 255, 255, 1)', // Color del borde
+                        borderWidth: 1,
+                    });
+                }
+
+                const IEchartData = {
+                    labels: labels, // Nombres de los items
+                    datasets: datasets,
+                };
+
+                const IEchartOptions = {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    },
+                };
+
+
+//ACÁ TERMINAN LAS GRAFICAS
 
     return (
         <div className={`admin-home ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
-<header className="header">
-    <img src={logoP} alt="Logo Proyecto" className="logoP" />
-    <h1>Sistema de Gestión de Recursos y Aulas de Laboratorio</h1>
-    <div className="header-buttons">
-        <button onClick={handleLogout}>Cerrar Sesión</button>
-        <button onClick={() => window.location.href = '/Unity'}>Simulador Unity</button>
-    </div>
-</header>
+            <header className="header">
+                <img src={logoP} alt="Logo Proyecto" className="logoP" />
+                <h1>Gestión de Recursos de Laboratorio</h1>
+                <div className="header-buttons">
+                    <button onClick={handleLogout}>Cerrar Sesión</button>
+                    <button onClick={() => navigate('/Unity')}>Simulador Unity</button>
+
+                </div>
+                
+            </header>
 
             <div className="main-container">
                 <div className="table-buttons-left">
-                    {['laboratory', 'equipments', 'inventory', 'reservation', 'user'].map((table) => (
+                    {['Dashboards','laboratory', 'equipments', 'inventory', 'reservation', 'user'].map((table) => (
                         <button key={table} onClick={() => handleTableClick(table)}>
                             {table.charAt(0).toUpperCase() + table.slice(1)} <span>{activeTable === table ? '▲' : '▼'}</span>
                         </button>
                     ))}
                 </div>
+                
 
                 <div className="table-details-right">
+                    
                     {activeTable && (
                         <>
                             <h2>{activeTable.charAt(0).toUpperCase() + activeTable.slice(1)} Details</h2>
+                                
 
+                            {activeTable === 'Dashboards' && (
+                <div>
+                    {/* Botón para abrir el popup de Rol Estudiante */}
+                    <button onClick={handleOpenStudentPopup}>Explicación del Rol Estudiante</button>
+                    {showStudentPopup && (
+                        <div className="popup">
+                            <div className="popup-content">
+                                <h2>Explicación del Sistema de Gestión</h2>
+                                <div className="popup-text">
+                                    <h5>Rol de Estudiante</h5>
+                                    <p>
+                                    <p>
+                                                El rol estudiante en el sistema de gestión permite acceder a diversas funcionalidades que facilitan su
+                                                 experiencia educativa. Una de las características más destacadas es la visualización de dashboards, 
+                                                 donde los estudiantes pueden evaluar su rendimiento de manera integral en el Simulador de Manejo de
+                                                  Instrumentos Electrónicos "DigiLab", proporcionando una perspectiva clara sobre su progreso. Además,
+                                                   los estudiantes pueden informarse sobre cómo ubicarse en la sede de Chía y conocer los laboratorios
+                                                    disponibles, lo que les ayuda a orientarse mejor en su entorno académico. La plataforma también
+                                                     brinda la posibilidad de consultar información sobre los equipos, inventarios y laboratorios,
+                                                      facilitando el acceso a recursos esenciales para su aprendizaje. Asimismo, los estudiantes
+                                                       tienen la capacidad de realizar reservaciones de equipos, así como editarlas o eliminarlas
+                                                        según sea necesario, lo que optimiza la gestión de recursos. Finalmente, el sistema permite
+                                                         a los estudiantes visualizar una lista de sus compañeros de clase, promoviendo la interacción
+                                                          y colaboración entre pares dentro del entorno educativo.
+                                                </p>
+                                    </p>
+                                </div>
+                                <button onClick={handleClosePopupE}>Cerrar</button>
+                            </div>
+                            <div className="popup-overlay" onClick={handleClosePopupE}></div>
+                        </div>
+                    )}
 
+                    {/* Botón para abrir el popup de Guia Laboratorios */}
+                    <button onClick={handleOpenLabPopup}>Cómo llegar a los Laboratorios</button>
+                    {showLabPopup && (
+                        <div className="popup">
+                            <div className="popup-content">
+                                <h2>Guía Laboratorios Sede Chía</h2>
+                                <div className="popup-text">
+                                    <h5>Salones / Laboratorios</h5>
+                                    <p>Los laboratorios de la extensión Chía de la Universidad de Cundinamarca están organizados de manera sistemática y fácilmente identificable. Cada laboratorio cuenta con un número de tres dígitos que indica su ubicación específica en el edificio. Los laboratorios del primer piso están numerados en el rango de 100 a 114, los del segundo piso de 200 a 214, y los del tercer piso de 300 a 314. 
 
+La disposición dentro de cada piso sigue un orden lógico. En el segundo piso, por ejemplo, el laboratorio 201 se encuentra a la derecha al inicio del pasillo, mientras que el 208 está ubicado al fondo, en la esquina derecha. A partir de ese punto, los laboratorios continúan del lado izquierdo del fondo, desde el 209 hasta el 214. Esta organización facilita a los estudiantes y al personal encontrar rápidamente los laboratorios, optimizando así el acceso a los recursos y equipos necesarios para las actividades académicas y de investigación.</p>
+                                </div>
+                                <button onClick={handleClosePopupE}>Cerrar</button>
+                            </div>
+                            <div className="popup-overlay" onClick={handleClosePopupE}></div>
+                        </div>
+                    )}
+
+                    <div>
+                        <TeacherDashboard users={users} />
+                    </div>
+
+                    <div className="spacing"></div> {/* Espaciador */}
+                </div>
+            )}
 {/* LABORATORY */}
                                     {activeTable === 'laboratory' && laboratories.length > 0 && (
                             <div>
-                                
+                                                                   {/* Dashboard con gráfico */}
+                                                                   <div style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
+                                            <h4>Capacidad en cada Laboratorio</h4>
+                                            <Bar data={chartData} options={chartOptions} />
+                                        </div>
+                                        <div className="spacing"></div> {/* Espaciador */}
                                 <div className="data-list">
                                     <h3>Datos Encontrados:</h3>
                                     <table className="styled-table">
@@ -1049,6 +1284,7 @@ const handleUpdatePermission = async () => {
                                     </tbody>
 
                                     </table>
+                                    <div className="spacing"></div> {/* Espaciador */}
                                 </div>
                             </div>
                         )}
@@ -1057,6 +1293,11 @@ const handleUpdatePermission = async () => {
 {/* EQUIPMENT */}
                             {activeTable === 'equipments' && equipments.length > 0 && (
                                 <div>
+                                                        {/* Gráfico circular de estado de los equipos */}
+                    <h3>Estado de los Equipos:</h3>
+                    <div style={{ width: '100%', height: '400px' }}>
+                        <Pie data={EchartData} options={EchartOptions} />
+                    </div>
                                     <h3>Crear Equipment:</h3>
                                     <button onClick={handleOpenCreatePopup}>CREAR</button>
 
@@ -1088,6 +1329,7 @@ const handleUpdatePermission = async () => {
                                             ))}
                                         </tbody>
                                     </table>
+                                    <div className="spacing"></div> {/* Espaciador */}
                                 </div>
                             )}
 
@@ -1095,7 +1337,10 @@ const handleUpdatePermission = async () => {
    {/* INVENTORY */}
                 {activeTable === 'inventory' && inventory.length > 0 && (
                     <div>
-                        
+                                                        <div>
+            <h3>Gráfico de Inventario por Laboratorio</h3>
+            <Bar data={IEchartData} options={IEchartOptions} />
+        </div>
                         {/* Tabla de inventario existente */}
                         <h3>Datos Encontrados:</h3>
                         <table className="styled-table">
@@ -1120,6 +1365,7 @@ const handleUpdatePermission = async () => {
                                 ))}
                             </tbody>
                         </table>
+                        <div className="spacing"></div> {/* Espaciador */}
                     </div>
                 )}
 
@@ -1324,46 +1570,46 @@ const handleUpdatePermission = async () => {
                                                 ))}
                                             </tbody>
                                         </table>
-
+                                        <div className="spacing"></div> {/* Espaciador */}
                                     </div>
                                 )}
 
 
 
- {/* USER*/}     
-                               {/* USER */}
-{activeTable === 'user' && users.length > 0 && (
-    <div>
-        {/* Tabla de usuarios existentes */}
-        <h3>Datos Encontrados: (Compañeros de Clase)</h3>
-        <table className="styled-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Email</th>
-                    <th>Tipo de Usuario</th>
-                </tr>
-            </thead>
-            <tbody>
-                {users
-                    .filter(user => user.user_Type?.userType === 'Student') // Filtra los usuarios por tipo
-                    .map(user => (
-                        <tr key={user.user_ID}>
-                            <td>{user.user_ID}</td>
-                            <td>{user.first_Name || 'Sin nombre'}</td>
-                            <td>{user.last_Name || 'Sin apellido'}</td>
-                            <td>{user.email || 'N/A'}</td>
-                            <td>{user.user_Type?.userType || 'N/A'}</td>
-                        </tr>
-                    ))}
-            </tbody>
-        </table>
+                            {/* USER*/}     
+                                                        {/* USER */}
+                            {activeTable === 'user' && users.length > 0 && (
+                                <div>
+                                    {/* Tabla de usuarios existentes */}
+                                    <h3>Datos Encontrados: (Compañeros de Clase)</h3>
+                                    <table className="styled-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nombre</th>
+                                                <th>Apellido</th>
+                                                <th>Email</th>
+                                                <th>Tipo de Usuario</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {users
+                                                .filter(user => user.user_Type?.userType === 'Student') // Filtra los usuarios por tipo
+                                                .map(user => (
+                                                    <tr key={user.user_ID}>
+                                                        <td>{user.user_ID}</td>
+                                                        <td>{user.first_Name || 'Sin nombre'}</td>
+                                                        <td>{user.last_Name || 'Sin apellido'}</td>
+                                                        <td>{user.email || 'N/A'}</td>
+                                                        <td>{user.user_Type?.userType || 'N/A'}</td>
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
 
-        <div className="spacing"></div> {/* Espaciador */}
-    </div>
-)}
+                                    <div className="spacing"></div> {/* Espaciador */}
+                                </div>
+                            )}
 
 
 
